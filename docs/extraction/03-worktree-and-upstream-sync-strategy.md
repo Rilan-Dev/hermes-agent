@@ -8,11 +8,11 @@
 | Branch | Purpose | Allowed changes |
 |---|---|---|
 | `main` | Fork mirror/integration branch | Upstream changes and separately reviewed fork changes only |
-| `planning/channels-providers-extraction` | Approved design and inventory baseline | Documents and review corrections only |
+| `planning/channels-providers-extraction` | Review baseline for design and inventory | Documents and review corrections only |
 | `worktree/channels-providers-extraction` | Later implementation branch | Manifest, characterization tests, projected package, compatibility adapters |
 | optional phase branches | Narrow implementation increments | One reviewed phase at a time |
 
-The implementation worktree must be created from the planning branch, not directly from an unreviewed or dirty local `main` checkout.
+The implementation worktree must be created from the planning branch after document approval, not directly from an unreviewed or dirty local `main` checkout.
 
 ## 2. Worktree creation after document approval
 
@@ -168,16 +168,13 @@ fix(compat): adapt channel/provider package to upstream <B>
 test(sync): cover new platform/provider behavior from <B>
 ```
 
-This separation keeps upstream changes reviewable and makes regressions easier to bisect.
-
 ## 7. Drift report
 
-Every sync must produce a review artifact containing:
+Every sync must report:
 
 - previous and new source SHAs;
 - included file counts by classification;
-- new/removed/renamed platform plugins;
-- new/removed/renamed provider plugins;
+- new/removed/renamed platform and provider plugins;
 - canonical provider membership changes;
 - auth-type and required-env changes;
 - API-mode/transport changes;
@@ -260,13 +257,6 @@ That branch can seed a standalone repository without making the standalone repos
 
 ## 13. Rollback
 
-Every implementation phase must be independently revertible. Do not combine:
-
-- source projection,
-- facade refactoring,
-- dependency removal,
-- and upstream refresh
-
-in the same commit.
+Every implementation phase must be independently revertible. Do not combine source projection, facade refactoring, dependency removal, and upstream refresh in the same commit.
 
 If a phase fails, remove its worktree branch or revert its phase commits; `main` and the planning branch remain unchanged.
