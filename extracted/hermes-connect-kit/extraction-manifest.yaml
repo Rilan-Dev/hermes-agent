@@ -1,6 +1,6 @@
 version: 1
 source_repository: Rilan-Dev/hermes-agent
-source_sha: d7b36070ef807841699ad32c5b6af547fee3ff64
+source_sha: 18bb6f1aeaa334badee6271fc3337f39ca6bfcfb
 
 dynamic_roots:
   - path: gateway/platforms

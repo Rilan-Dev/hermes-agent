@@ -11,7 +11,7 @@ def test_repository_manifest_loads() -> None:
         Path("extracted/hermes-connect-kit/extraction-manifest.yaml")
     )
     assert manifest.version == 1
-    assert manifest.source_sha == "d7b36070ef807841699ad32c5b6af547fee3ff64"
+    assert manifest.source_sha == "18bb6f1aeaa334badee6271fc3337f39ca6bfcfb"
     assert {rule.path for rule in manifest.dynamic_roots} >= {
         "plugins/platforms",
         "plugins/model-providers",
@@ -28,7 +28,7 @@ def test_manifest_rejects_unsafe_paths(tmp_path: Path, value: str) -> None:
     path.write_text(
         f"""version: 1
 source_repository: Rilan-Dev/hermes-agent
-source_sha: d7b36070ef807841699ad32c5b6af547fee3ff64
+source_sha: 18bb6f1aeaa334badee6271fc3337f39ca6bfcfb
 dynamic_roots:
   - path: {value!r}
     classification: core

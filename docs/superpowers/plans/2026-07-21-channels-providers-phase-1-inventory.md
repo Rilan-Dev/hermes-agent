@@ -10,8 +10,8 @@
 
 ## Global Constraints
 
-- Work only on `worktree/channels-providers-extraction`, based on `planning/channels-providers-extraction`.
-- Source baseline is `main@d7b36070ef807841699ad32c5b6af547fee3ff64`.
+- Work only on `worktree/channels-providers-extraction-latest`, based on `planning/channels-providers-extraction-latest`.
+- Source baseline is `main@18bb6f1aeaa334badee6271fc3337f39ca6bfcfb`.
 - Do not modify `main`.
 - Do not move, copy, delete, rename, or rewrite existing production source in Phase 1.
 - Do not create the final `hermes_connect.*` facade in Phase 1.
@@ -104,7 +104,7 @@ def build_inventory(repo_root: Path, manifest_path: Path, registry_snapshot_path
 - No production files
 
 **Interfaces:**
-- Consumes: remote branch `worktree/channels-providers-extraction`
+- Consumes: remote branch `worktree/channels-providers-extraction-latest`
 - Produces: isolated checkout with a clean baseline
 
 - [ ] **Step 1: Detect existing isolation**
@@ -131,20 +131,20 @@ if ! git check-ignore -q .worktrees; then
   git commit -m "chore: ignore local worktrees"
 fi
 git worktree add .worktrees/channels-providers-extraction \
-  worktree/channels-providers-extraction
+  worktree/channels-providers-extraction-latest
 cd .worktrees/channels-providers-extraction
 ```
 
-Expected: HEAD is on `worktree/channels-providers-extraction`.
+Expected: HEAD is on `worktree/channels-providers-extraction-latest`.
 
 - [ ] **Step 3: Verify ancestry and unchanged scoped production files**
 
 ```bash
-test "$(git branch --show-current)" = "worktree/channels-providers-extraction"
+test "$(git branch --show-current)" = "worktree/channels-providers-extraction-latest"
 git merge-base --is-ancestor \
-  d7b36070ef807841699ad32c5b6af547fee3ff64 HEAD
+  18bb6f1aeaa334badee6271fc3337f39ca6bfcfb HEAD
 git diff --exit-code \
-  d7b36070ef807841699ad32c5b6af547fee3ff64..HEAD -- \
+  18bb6f1aeaa334badee6271fc3337f39ca6bfcfb..HEAD -- \
   gateway providers plugins/model-providers plugins/platforms \
   hermes_cli agent cron tools/send_message_tool.py run_agent.py
 ```
@@ -198,7 +198,7 @@ def test_repository_manifest_loads() -> None:
         Path("extracted/hermes-connect-kit/extraction-manifest.yaml")
     )
     assert manifest.version == 1
-    assert manifest.source_sha == "d7b36070ef807841699ad32c5b6af547fee3ff64"
+    assert manifest.source_sha == "18bb6f1aeaa334badee6271fc3337f39ca6bfcfb"
     assert {rule.path for rule in manifest.dynamic_roots} >= {
         "plugins/platforms",
         "plugins/model-providers",
@@ -215,7 +215,7 @@ def test_manifest_rejects_unsafe_paths(tmp_path: Path, value: str) -> None:
     path.write_text(
         f"""version: 1
 source_repository: Rilan-Dev/hermes-agent
-source_sha: d7b36070ef807841699ad32c5b6af547fee3ff64
+source_sha: 18bb6f1aeaa334badee6271fc3337f39ca6bfcfb
 dynamic_roots:
   - path: {value!r}
     classification: core
@@ -628,7 +628,7 @@ def test_build_inventory_is_deterministic() -> None:
     first = build_inventory(**kwargs)
     second = build_inventory(**kwargs)
     assert first == second
-    assert first["source_sha"] == "d7b36070ef807841699ad32c5b6af547fee3ff64"
+    assert first["source_sha"] == "18bb6f1aeaa334badee6271fc3337f39ca6bfcfb"
     assert first["files"]
     assert first["plugins"]["platforms"]
     assert first["plugins"]["model_providers"]
@@ -652,7 +652,7 @@ The report must contain:
 ```yaml
 schema_version: 1
 source_repository: Rilan-Dev/hermes-agent
-source_sha: d7b36070ef807841699ad32c5b6af547fee3ff64
+source_sha: 18bb6f1aeaa334badee6271fc3337f39ca6bfcfb
 inventory_head: <current commit SHA>
 files: []
 plugins:
@@ -815,7 +815,7 @@ Expected: no output.
 
 ```bash
 UNEXPECTED="$(git diff --name-only \
-  planning/channels-providers-extraction...HEAD \
+  planning/channels-providers-extraction-latest...HEAD \
   | grep -Ev '^(docs/extraction/generated/|docs/superpowers/plans/|extracted/hermes-connect-kit/extraction-manifest.yaml$|scripts/extraction/|tests/extraction/|\.gitignore$)' || true)"
 test -z "$UNEXPECTED" || { printf '%s\n' "$UNEXPECTED"; exit 1; }
 ```

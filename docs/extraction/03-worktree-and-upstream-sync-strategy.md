@@ -1,15 +1,15 @@
 # Isolated Worktree and Upstream Sync Strategy
 
 **Status:** Review draft  
-**Planning branch:** `planning/channels-providers-extraction`
+**Planning branch:** `planning/channels-providers-extraction-latest`
 
 ## 1. Branch roles
 
 | Branch | Purpose | Allowed changes |
 |---|---|---|
 | `main` | Fork mirror/integration branch | Upstream changes and separately reviewed fork changes only |
-| `planning/channels-providers-extraction` | Review baseline for design and inventory | Documents and review corrections only |
-| `worktree/channels-providers-extraction` | Later implementation branch | Manifest, characterization tests, projected package, compatibility adapters |
+| `planning/channels-providers-extraction-latest` | Review baseline for design and inventory | Documents and review corrections only |
+| `worktree/channels-providers-extraction-latest` | Later implementation branch | Manifest, characterization tests, projected package, compatibility adapters |
 | optional phase branches | Narrow implementation increments | One reviewed phase at a time |
 
 The implementation worktree must be created from the planning branch after document approval, not directly from an unreviewed or dirty local `main` checkout.
@@ -22,8 +22,8 @@ Suggested commands from a clean primary clone:
 git fetch origin
 git worktree add \
   .worktrees/channels-providers-extraction \
-  -b worktree/channels-providers-extraction \
-  origin/planning/channels-providers-extraction
+  -b worktree/channels-providers-extraction-latest \
+  origin/planning/channels-providers-extraction-latest
 ```
 
 Verification before editing:
@@ -38,7 +38,7 @@ git rev-parse HEAD
 Expected branch:
 
 ```text
-worktree/channels-providers-extraction
+worktree/channels-providers-extraction-latest
 ```
 
 The worktree must be clean before every phase begins. Unrelated local files or modifications must not be included in extraction commits.
@@ -67,7 +67,7 @@ After `origin/main` is refreshed, update the implementation branch inside its wo
 
 ```bash
 git fetch origin
-git switch worktree/channels-providers-extraction
+git switch worktree/channels-providers-extraction-latest
 git merge origin/main
 ```
 
@@ -118,7 +118,7 @@ version: 1
 source:
   repository: Rilan-Dev/hermes-agent
   ref: main
-  sha: d7b36070ef807841699ad32c5b6af547fee3ff64
+  sha: 18bb6f1aeaa334badee6271fc3337f39ca6bfcfb
 include_roots:
   - source: plugins/platforms
     destination: plugins/platforms
