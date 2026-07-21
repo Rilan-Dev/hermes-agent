@@ -21,3 +21,20 @@ class SourceState:
         data = asdict(self)
         data["root"] = str(self.root)
         return data
+
+
+@dataclass(frozen=True, slots=True)
+class PluginRecord:
+    kind: str
+    plugin_id: str
+    manifest_name: str
+    label: str | None
+    version: str | None
+    description: str | None
+    manifest_path: str
+    directory: str
+    entrypoints: tuple[str, ...]
+    required_env: tuple[str, ...]
+    optional_env: tuple[str, ...]
+    optional_dependencies: tuple[str, ...]
+    files: tuple[str, ...]
