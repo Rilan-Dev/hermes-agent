@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - Work only on `worktree/channels-providers-extraction-latest`, based on `planning/channels-providers-extraction-latest`.
-- Source baseline is `main@e3ce380c068f532fcceb2c087310fcc98da4ee38`.
+- Source baseline is `main@18bb6f1aeaa334badee6271fc3337f39ca6bfcfb`.
 - Do not modify `main`.
 - Do not move, copy, delete, rename, or rewrite existing production source in Phase 1.
 - Do not create the final `hermes_connect.*` facade in Phase 1.
@@ -142,9 +142,9 @@ Expected: HEAD is on `worktree/channels-providers-extraction-latest`.
 ```bash
 test "$(git branch --show-current)" = "worktree/channels-providers-extraction-latest"
 git merge-base --is-ancestor \
-  e3ce380c068f532fcceb2c087310fcc98da4ee38 HEAD
+  18bb6f1aeaa334badee6271fc3337f39ca6bfcfb HEAD
 git diff --exit-code \
-  e3ce380c068f532fcceb2c087310fcc98da4ee38..HEAD -- \
+  18bb6f1aeaa334badee6271fc3337f39ca6bfcfb..HEAD -- \
   gateway providers plugins/model-providers plugins/platforms \
   hermes_cli agent cron tools/send_message_tool.py run_agent.py
 ```
@@ -198,7 +198,7 @@ def test_repository_manifest_loads() -> None:
         Path("extracted/hermes-connect-kit/extraction-manifest.yaml")
     )
     assert manifest.version == 1
-    assert manifest.source_sha == "e3ce380c068f532fcceb2c087310fcc98da4ee38"
+    assert manifest.source_sha == "18bb6f1aeaa334badee6271fc3337f39ca6bfcfb"
     assert {rule.path for rule in manifest.dynamic_roots} >= {
         "plugins/platforms",
         "plugins/model-providers",
@@ -215,7 +215,7 @@ def test_manifest_rejects_unsafe_paths(tmp_path: Path, value: str) -> None:
     path.write_text(
         f"""version: 1
 source_repository: Rilan-Dev/hermes-agent
-source_sha: e3ce380c068f532fcceb2c087310fcc98da4ee38
+source_sha: 18bb6f1aeaa334badee6271fc3337f39ca6bfcfb
 dynamic_roots:
   - path: {value!r}
     classification: core
@@ -628,7 +628,7 @@ def test_build_inventory_is_deterministic() -> None:
     first = build_inventory(**kwargs)
     second = build_inventory(**kwargs)
     assert first == second
-    assert first["source_sha"] == "e3ce380c068f532fcceb2c087310fcc98da4ee38"
+    assert first["source_sha"] == "18bb6f1aeaa334badee6271fc3337f39ca6bfcfb"
     assert first["files"]
     assert first["plugins"]["platforms"]
     assert first["plugins"]["model_providers"]
@@ -652,7 +652,7 @@ The report must contain:
 ```yaml
 schema_version: 1
 source_repository: Rilan-Dev/hermes-agent
-source_sha: e3ce380c068f532fcceb2c087310fcc98da4ee38
+source_sha: 18bb6f1aeaa334badee6271fc3337f39ca6bfcfb
 inventory_head: <current commit SHA>
 files: []
 plugins:
