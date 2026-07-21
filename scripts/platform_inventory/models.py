@@ -61,3 +61,22 @@ class PythonGraph:
     imports: tuple[ImportEdge, ...]
     dynamic_imports: tuple[str, ...]
     unresolved_local_imports: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class RegistrySnapshot:
+    platforms: tuple[str, ...]
+    platform_concrete: tuple[str, ...]
+    platform_deferred: tuple[str, ...]
+    provider_profiles: tuple[str, ...]
+    provider_aliases: dict[str, str]
+    auth_providers: tuple[str, ...]
+    canonical_providers: tuple[str, ...]
+    model_catalog_providers: tuple[str, ...]
+    transports: tuple[str, ...]
+    toolsets: dict[str, tuple[str, ...]]
+    toolset_includes: dict[str, tuple[str, ...]]
+    tools: tuple[str, ...]
+    tool_to_toolset: dict[str, str]
+    imported_tool_modules: tuple[str, ...]
+    probe_errors: tuple[str, ...]
