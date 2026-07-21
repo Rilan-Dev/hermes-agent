@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   inventory:
@@ -92,3 +92,37 @@ jobs:
         run: |
           test "${{ steps.tests.outcome }}" = "success"
           test "${{ steps.generator.outcome }}" = "success"
+
+      - name: Persist validated reports once
+        if: >-
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          steps.tests.outcome == 'success' &&
+          steps.generator.outcome == 'success'
+        env:
+          HEAD_BRANCH: ${{ github.head_ref }}
+        run: |
+          set -euo pipefail
+          persist_root=/tmp/phase0-persist
+          rm -rf "$persist_root"
+          git fetch origin "$HEAD_BRANCH"
+          git worktree add --detach "$persist_root" "origin/$HEAD_BRANCH"
+
+          if [ -f "$persist_root/generated/platform_inventory/phase-0-review.md" ]; then
+            echo "Validated inventory is already committed; skipping persistence."
+            exit 0
+          fi
+
+          mkdir -p "$persist_root/generated/platform_inventory"
+          cp -R "$PHASE0_DIAGNOSTICS_DIR/generated/." \
+            "$persist_root/generated/platform_inventory/"
+          mkdir -p "$persist_root/docs/platform"
+          cp "$PHASE0_DIAGNOSTICS_DIR/generated/phase-0-review.md" \
+            "$persist_root/docs/platform/phase-0-findings.md"
+
+          cd "$persist_root"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add generated/platform_inventory docs/platform/phase-0-findings.md
+          git commit -m "docs(platform): archive validated Phase 0 inventory"
+          git push origin "HEAD:$HEAD_BRANCH"
