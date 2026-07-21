@@ -50,6 +50,76 @@ def _from_base(node: ast.ImportFrom, package: str) -> str:
     return node.module or ""
 
 
+def _catches_import_error(handler: ast.ExceptHandler) -> bool:
+    exception = handler.type
+    if exception is None:
+        return True
+    candidates = exception.elts if isinstance(exception, ast.Tuple) else (exception,)
+    for candidate in candidates:
+        if isinstance(candidate, ast.Name) and candidate.id in {
+            "ImportError",
+            "ModuleNotFoundError",
+        }:
+            return True
+        if (
+            isinstance(candidate, ast.Attribute)
+            and candidate.attr in {"ImportError", "ModuleNotFoundError"}
+        ):
+            return True
+    return False
+
+
+class _OptionalImportCollector(ast.NodeVisitor):
+    def __init__(self) -> None:
+        self.optional_nodes: set[int] = set()
+        self._guard_depth = 0
+
+    def visit_Try(self, node: ast.Try) -> None:
+        guarded = any(_catches_import_error(handler) for handler in node.handlers)
+        if guarded:
+            self._guard_depth += 1
+        for statement in node.body:
+            self.visit(statement)
+        if guarded:
+            self._guard_depth -= 1
+        for handler in node.handlers:
+            for statement in handler.body:
+                self.visit(statement)
+        for statement in node.orelse:
+            self.visit(statement)
+        for statement in node.finalbody:
+            self.visit(statement)
+
+    def visit_Import(self, node: ast.Import) -> None:
+        if self._guard_depth:
+            self.optional_nodes.add(id(node))
+
+    def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
+        if self._guard_depth:
+            self.optional_nodes.add(id(node))
+
+    def _visit_deferred_body(self, node: ast.AST) -> None:
+        previous = self._guard_depth
+        self._guard_depth = 0
+        self.generic_visit(node)
+        self._guard_depth = previous
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        self._visit_deferred_body(node)
+
+    def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
+        self._visit_deferred_body(node)
+
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
+        self._visit_deferred_body(node)
+
+
+def _optional_import_nodes(tree: ast.AST) -> set[int]:
+    collector = _OptionalImportCollector()
+    collector.visit(tree)
+    return collector.optional_nodes
+
+
 def _selected_files(root: Path, include_paths: Sequence[Path]) -> set[Path]:
     selected: set[Path] = set()
     for relative in include_paths:
@@ -74,6 +144,7 @@ def scan_python_graph(root: Path, include_paths: Sequence[Path]) -> PythonGraph:
     imports: list[ImportEdge] = []
     dynamic: set[str] = set()
     unresolved: set[str] = set()
+    optional_unresolved: set[str] = set()
 
     for path in sorted(_selected_files(repository, include_paths)):
         relative_path = path.relative_to(repository)
@@ -93,13 +164,19 @@ def scan_python_graph(root: Path, include_paths: Sequence[Path]) -> PythonGraph:
             raise InventoryError(f"{relative}: invalid Python syntax or encoding") from exc
 
         package = _source_package(relative_path)
+        optional_nodes = _optional_import_nodes(tree)
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 for alias in node.names:
                     target = _resolve(alias.name, index)
                     imports.append(ImportEdge(relative, alias.name, target))
                     if target is None and alias.name.split(".", 1)[0] in local_prefixes:
-                        unresolved.add(f"{relative}:{alias.name}")
+                        collection = (
+                            optional_unresolved
+                            if id(node) in optional_nodes
+                            else unresolved
+                        )
+                        collection.add(f"{relative}:{alias.name}")
             elif isinstance(node, ast.ImportFrom):
                 base = _from_base(node, package)
                 for alias in node.names:
@@ -119,7 +196,12 @@ def scan_python_graph(root: Path, include_paths: Sequence[Path]) -> PythonGraph:
                     imports.append(ImportEdge(relative, module, target))
                     root_name = module.split(".", 1)[0] if module else ""
                     if target is None and root_name in local_prefixes:
-                        unresolved.add(f"{relative}:{module}")
+                        collection = (
+                            optional_unresolved
+                            if id(node) in optional_nodes
+                            else unresolved
+                        )
+                        collection.add(f"{relative}:{module}")
             elif isinstance(node, ast.Call):
                 value: str | None = None
                 if (
@@ -148,4 +230,5 @@ def scan_python_graph(root: Path, include_paths: Sequence[Path]) -> PythonGraph:
         ),
         dynamic_imports=tuple(sorted(dynamic)),
         unresolved_local_imports=tuple(sorted(unresolved)),
+        optional_local_imports=tuple(sorted(optional_unresolved)),
     )
