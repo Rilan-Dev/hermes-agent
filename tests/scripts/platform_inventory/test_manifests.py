@@ -17,6 +17,7 @@ def test_discover_plugins_finds_recursive_manifest_children() -> None:
         ("backend", "tts/openai"),
         ("model-provider", "model-providers/example"),
         ("platform", "platforms/telegram"),
+        ("standalone", "cron_providers/chronos"),
     ]
     telegram = next(r for r in records if r.plugin_key == "platforms/telegram")
     assert telegram.plugin_id == "telegram"
@@ -39,10 +40,19 @@ def test_duplicate_leaf_names_keep_distinct_plugin_keys() -> None:
     assert image.provides_hooks == ("pre_tool_call",)
 
 
-def test_discover_plugins_rejects_missing_kind(tmp_path: Path) -> None:
+def test_discover_plugins_defaults_omitted_kind_to_standalone() -> None:
+    records = discover_plugins(FIXTURE, [Path(".")])
+    chronos = next(
+        record for record in records if record.plugin_key == "cron_providers/chronos"
+    )
+
+    assert chronos.kind == "standalone"
+
+
+def test_discover_plugins_rejects_explicit_blank_kind(tmp_path: Path) -> None:
     plugin = tmp_path / "platforms" / "broken"
     plugin.mkdir(parents=True)
-    (plugin / "plugin.yaml").write_text("name: broken\n", encoding="utf-8")
+    (plugin / "plugin.yaml").write_text("name: broken\nkind: ''\n", encoding="utf-8")
 
-    with pytest.raises(InventoryError, match="missing kind"):
+    with pytest.raises(InventoryError, match="blank kind"):
         discover_plugins(tmp_path, [Path("platforms")])
