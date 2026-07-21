@@ -139,7 +139,7 @@ class Conversation:
             self,
             updated_at=max(self.updated_at, message.sent_at),
             unread_count=self.unread_count + unread_increment,
-            last_messae_text=message.text,
+            last_message_text=message.text,
             last_message_at=message.sent_at,
         )
 
