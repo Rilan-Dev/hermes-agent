@@ -22,7 +22,7 @@ def _string_list(value: object) -> list[str]:
     if isinstance(value, str):
         return [value]
     try:
-        return sorted(str(item) for item in value)  # type: ignore[arg-type]
+        return [str(item) for item in value]  # type: ignore[union-attr]
     except TypeError:
         return [str(value)]
 
