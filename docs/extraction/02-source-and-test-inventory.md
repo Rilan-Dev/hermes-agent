@@ -1,7 +1,7 @@
 # Source and Test Inventory
 
 **Status:** Review draft  
-**Source ref:** `main@e3ce380c068f532fcceb2c087310fcc98da4ee38`
+**Source ref:** `main@18bb6f1aeaa334badee6271fc3337f39ca6bfcfb`
 
 ## 1. Inventory method
 
@@ -372,7 +372,7 @@ Exclusion is evidence-based. A file must not be copied merely because it resides
 Phase 1 must generate a machine-readable report with at least:
 
 ```yaml
-source_sha: e3ce380c068f532fcceb2c087310fcc98da4ee38
+source_sha: 18bb6f1aeaa334badee6271fc3337f39ca6bfcfb
 files:
   - source: gateway/session.py
     class: core

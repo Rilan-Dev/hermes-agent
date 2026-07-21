@@ -17,7 +17,7 @@ def manifest_for_tmp_tree(
     return ExtractionManifest(
         version=1,
         source_repository="Rilan-Dev/hermes-agent",
-        source_sha="e3ce380c068f532fcceb2c087310fcc98da4ee38",
+        source_sha="18bb6f1aeaa334badee6271fc3337f39ca6bfcfb",
         dynamic_roots=(
             RootRule(
                 path="plugins/platforms",

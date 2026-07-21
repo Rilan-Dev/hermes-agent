@@ -6,7 +6,7 @@ This review covers the refreshed Phase 1 inventory and characterization evidence
 
 ## What is verified
 
-- The approved source baseline is `e3ce380c068f532fcceb2c087310fcc98da4ee38`.
+- The approved source baseline is `18bb6f1aeaa334badee6271fc3337f39ca6bfcfb`.
 - Runtime platform, plugin, provider-profile, canonical-provider, authentication-provider, and transport registries were captured in an isolated environment.
 - The filesystem inventory, registry snapshot, Markdown report, YAML report, and test matrix are deterministic.
 - Ruff and all extraction tests passed in the evidence workflow.

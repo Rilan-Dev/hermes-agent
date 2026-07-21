@@ -1,17 +1,17 @@
 # Phase 1 Extraction Inventory
 
 - Source repository: `Rilan-Dev/hermes-agent`
-- Source SHA: `e3ce380c068f532fcceb2c087310fcc98da4ee38`
-- Inventory HEAD: `0831565617f44d4ae2d772daf5d9df3ef7421bd4`
-- Scoped files: **322**
-- Out-of-scope internal dependencies: **770**
+- Source SHA: `18bb6f1aeaa334badee6271fc3337f39ca6bfcfb`
+- Inventory HEAD: `f4d2b2b9f437d041c0305c5d1529fb0267a888c2`
+- Scoped files: **285**
+- Out-of-scope internal dependencies: **771**
 - Unresolved internal imports: **0**
 
 ## Classification Counts
 
 | Classification | Files |
 |---|---|
-| core | 281 |
+| core | 244 |
 | host_port | 16 |
 | optional_ui | 25 |
 
@@ -593,6 +593,7 @@
 | hermes_cli/main.py | hermes_cli/uninstall.py |
 | hermes_cli/main.py | hermes_cli/web_server.py |
 | hermes_cli/main.py | hermes_cli/webhook.py |
+| hermes_cli/main.py | hermes_cli/windows_ssh_runtime.py |
 | hermes_cli/main.py | hermes_cli/xai_retirement.py |
 | hermes_cli/main.py | plugins/dashboard_auth/basic/__init__.py |
 | hermes_cli/main.py | plugins/memory/__init__.py |
