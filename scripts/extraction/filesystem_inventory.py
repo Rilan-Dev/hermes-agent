@@ -29,6 +29,11 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _is_generated_python_cache(path: Path, source_root: Path) -> bool:
+    relative = path.relative_to(source_root)
+    return "__pycache__" in relative.parts or path.suffix in {".pyc", ".pyo"}
+
+
 def _file_record(
     *,
     repo_root: Path,
@@ -85,7 +90,10 @@ def inventory_files(
             raise InventoryError(f"missing dynamic root: {rule.path}")
 
         for path in sorted(
-            candidate for candidate in source_root.rglob("*") if candidate.is_file()
+            candidate
+            for candidate in source_root.rglob("*")
+            if candidate.is_file()
+            and not _is_generated_python_cache(candidate, source_root)
         ):
             relative = path.relative_to(source_root).as_posix()
             destination = PurePosixPath(rule.destination, relative).as_posix()
