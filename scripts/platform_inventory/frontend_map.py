@@ -60,6 +60,71 @@ def _strip_js_comments(text: str) -> str:
     return "".join(output)
 
 
+def _decode_js_string(value: str) -> str:
+    output: list[str] = []
+    index = 0
+    simple = {
+        "b": "\b",
+        "f": "\f",
+        "n": "\n",
+        "r": "\r",
+        "t": "\t",
+        "v": "\v",
+        "0": "\0",
+        "'": "'",
+        '"': '"',
+        "`": "`",
+        "\\": "\\",
+        "/": "/",
+    }
+    while index < len(value):
+        char = value[index]
+        if char != "\\" or index + 1 >= len(value):
+            output.append(char)
+            index += 1
+            continue
+
+        escaped = value[index + 1]
+        if escaped in simple:
+            output.append(simple[escaped])
+            index += 2
+            continue
+        if escaped in {"\n", "\r"}:
+            index += 2
+            if escaped == "\r" and index < len(value) and value[index] == "\n":
+                index += 1
+            continue
+        if escaped == "x" and index + 3 < len(value):
+            digits = value[index + 2 : index + 4]
+            if all(character in "0123456789abcdefABCDEF" for character in digits):
+                output.append(chr(int(digits, 16)))
+                index += 4
+                continue
+        if escaped == "u":
+            if index + 2 < len(value) and value[index + 2] == "{":
+                end = value.find("}", index + 3)
+                digits = value[index + 3 : end] if end != -1 else ""
+                if digits and all(
+                    character in "0123456789abcdefABCDEF" for character in digits
+                ):
+                    codepoint = int(digits, 16)
+                    if codepoint <= 0x10FFFF:
+                        output.append(chr(codepoint))
+                        index = end + 1
+                        continue
+            elif index + 5 < len(value):
+                digits = value[index + 2 : index + 6]
+                if all(character in "0123456789abcdefABCDEF" for character in digits):
+                    output.append(chr(int(digits, 16)))
+                    index += 6
+                    continue
+
+        # JavaScript identity escapes do not need Python codec semantics.
+        output.append(escaped)
+        index += 2
+    return "".join(output)
+
+
 def _source_files(repository: Path) -> list[Path]:
     files: set[Path] = set()
     for relative in (Path("web/src"), Path("apps/desktop/src"), Path("apps/shared")):
@@ -91,9 +156,7 @@ def scan_frontend(root: Path) -> FrontendMap:
             if marker in text:
                 static.add(f"{relative}:{marker}")
         for match in _STRING_LITERAL.finditer(text):
-            value = bytes(match.group("value"), "utf-8").decode(
-                "unicode_escape", errors="replace"
-            )
+            value = _decode_js_string(match.group("value"))
             if _API_VALUE.fullmatch(value):
                 api_paths.add(value)
             elif _WS_VALUE.fullmatch(value):
