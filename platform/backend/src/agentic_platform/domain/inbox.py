@@ -5,7 +5,11 @@ from datetime import datetime
 from enum import StrEnum
 
 from .channels import ChannelConnection, NativeReference
-from .errors import CrossWorkspaceError, DomainValidationError, InvalidTransitionError
+from .errors import (
+    CrossWorkspaceError,
+    DomainValidationError,
+    InvalidTransitionError,
+)
 from .ids import ConnectionId, ConversationId, MessageId, WorkspaceId
 from .time import require_utc
 
@@ -83,6 +87,9 @@ class Conversation:
     status: ConversationStatus
     created_at: datetime
     updated_at: datetime
+    unread_count: int = 0
+    last_message_text: str | None = None
+    last_message_at: datetime | None = None
 
     @classmethod
     def create(
@@ -114,6 +121,26 @@ class Conversation:
             status=ConversationStatus.OPEN,
             created_at=timestamp,
             updated_at=timestamp,
+            unread_count=0,
+            last_message_text=None,
+            last_message_at=None,
+        )
+
+    def record_message(self, message: Message) -> Conversation:
+        if (
+            message.workspace_id != self.workspace_id
+            or message.conversation_id != self.id
+        ):
+            raise CrossWorkspaceError(
+                "message must belong to the conversation workspace"
+            )
+        unread_increment = 1 if message.direction is MessageDirection.INBOUND else 0
+        return replace(
+            self,
+            updated_at=max(self.updated_at, message.sent_at),
+            unread_count=self.unread_count + unread_increment,
+            last_messae_text=message.text,
+            last_message_at=message.sent_at,
         )
 
     def transition(self, target: ConversationStatus, *, at: datetime) -> Conversation:
@@ -128,7 +155,8 @@ class Conversation:
             return self
         if target not in _ALLOWED_TRANSITIONS[self.status]:
             raise InvalidTransitionError(
-                f"conversation cannot transition from {self.status.value} to {target.value}"
+                "conversation cannot transition from "
+                f"{self.status.value} to {target.value}"
             )
         return replace(self, status=target, updated_at=timestamp)
 
@@ -143,6 +171,8 @@ class Message:
     text: str | None
     sent_at: datetime
     delivery_state: DeliveryState
+    reply_to_native_id: str | None = None
+    thread_native_id: str | None = None
 
     @classmethod
     def create(
@@ -155,6 +185,8 @@ class Message:
         text: str | None,
         sent_at: datetime,
         delivery_state: DeliveryState,
+        reply_to_native_id: str | None = None,
+        thread_native_id: str | None = None,
     ) -> Message:
         if workspace_id != conversation.workspace_id:
             raise CrossWorkspaceError(
@@ -178,4 +210,6 @@ class Message:
             text=normalized_text or None,
             sent_at=require_utc(sent_at, field="message sent_at"),
             delivery_state=delivery_state,
+            reply_to_native_id=(reply_to_native_id or "").strip() or None,
+            thread_native_id=(thread_native_id or "").strip() or None,
         )

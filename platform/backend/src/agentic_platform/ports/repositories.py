@@ -3,9 +3,11 @@ from __future__ import annotations
 from types import TracebackType
 from typing import Protocol, Sequence
 
+from agentic_platform.domain.channels import Contact, ExternalIdentity
 from agentic_platform.domain.events import ChannelEvent
 from agentic_platform.domain.ids import (
     ConnectionId,
+    ContactId,
     ConversationId,
     MessageId,
     WorkspaceId,
@@ -22,6 +24,35 @@ class WorkspaceRepository(Protocol):
         self,
         workspace_id: WorkspaceId,
         workspace: Workspace,
+    ) -> None: ...
+
+
+class ContactRepository(Protocol):
+    async def get(
+        self,
+        workspace_id: WorkspaceId,
+        contact_id: ContactId,
+    ) -> Contact | None: ...
+
+    async def save(
+        self,
+        workspace_id: WorkspaceId,
+        contact: Contact,
+    ) -> None: ...
+
+
+class ExternalIdentityRepository(Protocol):
+    async def get_by_native_id(
+        self,
+        workspace_id: WorkspaceId,
+        connection_id: ConnectionId,
+        native_id: str,
+    ) -> ExternalIdentity | None: ...
+
+    async def save(
+        self,
+        workspace_id: WorkspaceId,
+        identity: ExternalIdentity,
     ) -> None: ...
 
 
@@ -100,6 +131,8 @@ class ChannelEventRepository(Protocol):
 
 
 class OutboxRepository(Protocol):
+    async def next_cursor(self, workspace_id: WorkspaceId) -> EventCursor: ...
+
     async def append(
         self,
         workspace_id: WorkspaceId,
@@ -118,6 +151,12 @@ class OutboxRepository(Protocol):
 class UnitOfWork(Protocol):
     @property
     def workspaces(self) -> WorkspaceRepository: ...
+
+    @property
+    def contacts(self) -> ContactRepository: ...
+
+    @property
+    def external_identities(self) -> ExternalIdentityRepository: ...
 
     @property
     def conversations(self) -> ConversationRepository: ...

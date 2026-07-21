@@ -30,6 +30,7 @@ class ChannelEvent:
     kind: ChannelEventKind
     occurred_at: datetime
     native_target: NativeReference | None = None
+    raw_payload_ref: str | None = None
 
     @classmethod
     def create(
@@ -41,6 +42,7 @@ class ChannelEvent:
         kind: ChannelEventKind,
         occurred_at: datetime,
         native_target: NativeReference | None = None,
+        raw_payload_ref: str | None = None,
     ) -> ChannelEvent:
         if workspace_id != connection.workspace_id:
             raise CrossWorkspaceError(
@@ -53,10 +55,14 @@ class ChannelEvent:
             raise DomainValidationError("platform event ID must not be blank")
         if not isinstance(kind, ChannelEventKind):
             raise DomainValidationError("channel event kind is invalid")
-        if native_target is not None and native_target.platform_id != connection.platform_id:
+        if (
+            native_target is not None
+            and native_target.platform_id != connection.platform_id
+        ):
             raise DomainValidationError(
                 "event target platform must match the channel connection"
             )
+        normalized_raw_ref = (raw_payload_ref or "").strip() or None
         return cls(
             id=EventId.new(),
             workspace_id=workspace_id,
@@ -65,6 +71,7 @@ class ChannelEvent:
             kind=kind,
             occurred_at=require_utc(occurred_at, field="channel event occurred_at"),
             native_target=native_target,
+            raw_payload_ref=normalized_raw_ref,
         )
 
     @property

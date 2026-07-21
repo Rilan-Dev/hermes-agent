@@ -3,12 +3,14 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass, field
 from types import TracebackType
-from typing import Sequence
+from typing import Sequence, TypeVar
 
+from agentic_platform.domain.channels import Contact, ExternalIdentity
 from agentic_platform.domain.errors import CrossWorkspaceError, DomainValidationError
 from agentic_platform.domain.events import ChannelEvent
 from agentic_platform.domain.ids import (
     ConnectionId,
+    ContactId,
     ConversationId,
     MessageId,
     WorkspaceId,
@@ -21,6 +23,10 @@ from agentic_platform.ports.event_bus import EventCursor, WorkspaceEvent
 @dataclass(slots=True)
 class _MemoryState:
     workspaces: dict[WorkspaceId, Workspace] = field(default_factory=dict)
+    contacts: dict[tuple[WorkspaceId, ContactId], Contact] = field(default_factory=dict)
+    external_identities: dict[
+        tuple[WorkspaceId, ConnectionId, str], ExternalIdentity
+    ] = field(default_factory=dict)
     conversations: dict[tuple[WorkspaceId, ConversationId], Conversation] = field(
         default_factory=dict
     )
@@ -39,12 +45,17 @@ class _MemoryState:
     def clone(self) -> _MemoryState:
         return _MemoryState(
             workspaces=dict(self.workspaces),
+            contacts=dict(self.contacts),
+            external_identities=dict(self.external_identities),
             conversations=dict(self.conversations),
             conversation_native=dict(self.conversation_native),
             messages=dict(self.messages),
             message_native=dict(self.message_native),
             channel_events=dict(self.channel_events),
-            outbox={workspace_id: list(events) for workspace_id, events in self.outbox.items()},
+            outbox={
+                workspace_id: list(events)
+                for workspace_id, events in self.outbox.items()
+            },
         )
 
 
@@ -65,8 +76,55 @@ class _WorkspaceRepository:
 
     async def save(self, workspace_id: WorkspaceId, workspace: Workspace) -> None:
         if workspace_id != workspace.id:
-            raise CrossWorkspaceError("workspace repository key must match workspace ID")
+            raise CrossWorkspaceError(
+                "workspace repository key must match workspace ID"
+            )
         self._state.workspaces[workspace_id] = workspace
+
+
+class _ContactRepository:
+    def __init__(self, state: _MemoryState) -> None:
+        self._state = state
+
+    async def get(
+        self,
+        workspace_id: WorkspaceId,
+        contact_id: ContactId,
+    ) -> Contact | None:
+        return self._state.contacts.get((workspace_id, contact_id))
+
+    async def save(self, workspace_id: WorkspaceId, contact: Contact) -> None:
+        if workspace_id != contact.workspace_id:
+            raise CrossWorkspaceError("contact repository cannot cross workspaces")
+        self._state.contacts[(workspace_id, contact.id)] = contact
+
+
+class _ExternalIdentityRepository:
+    def __init__(self, state: _MemoryState) -> None:
+        self._state = state
+
+    async def get_by_native_id(
+        self,
+        workspace_id: WorkspaceId,
+        connection_id: ConnectionId,
+        native_id: str,
+    ) -> ExternalIdentity | None:
+        return self._state.external_identities.get(
+            (workspace_id, connection_id, native_id)
+        )
+
+    async def save(
+        self,
+        workspace_id: WorkspaceId,
+        identity: ExternalIdentity,
+    ) -> None:
+        if workspace_id != identity.workspace_id:
+            raise CrossWorkspaceError(
+                "external-identity repository cannot cross workspaces"
+            )
+        self._state.external_identities[
+            (workspace_id, identity.connection_id, identity.native.native_id)
+        ] = identity
 
 
 class _ConversationRepository:
@@ -104,7 +162,9 @@ class _ConversationRepository:
         _validate_limit(limit)
         values = [
             conversation
-            for (stored_workspace_id, _), conversation in self._state.conversations.items()
+            for (stored_workspace_id, _), conversation in (
+                self._state.conversations.items()
+            )
             if stored_workspace_id == workspace_id
         ]
         values.sort(key=lambda item: (item.updated_at, str(item.id)), reverse=True)
@@ -119,14 +179,10 @@ class _ConversationRepository:
             raise CrossWorkspaceError(
                 "conversation repository cannot cross workspace boundaries"
             )
-        key = (workspace_id, conversation.id)
-        native_key = (
-            workspace_id,
-            conversation.connection_id,
-            conversation.native.native_id,
-        )
-        self._state.conversations[key] = conversation
-        self._state.conversation_native[native_key] = conversation.id
+        self._state.conversations[(workspace_id, conversation.id)] = conversation
+        self._state.conversation_native[
+            (workspace_id, conversation.connection_id, conversation.native.native_id)
+        ] = conversation.id
 
 
 class _MessageRepository:
@@ -174,11 +230,13 @@ class _MessageRepository:
 
     async def save(self, workspace_id: WorkspaceId, message: Message) -> None:
         if workspace_id != message.workspace_id:
-            raise CrossWorkspaceError("message repository cannot cross workspace boundaries")
-        key = (workspace_id, message.id)
-        native_key = (workspace_id, message.conversation_id, message.native.native_id)
-        self._state.messages[key] = message
-        self._state.message_native[native_key] = message.id
+            raise CrossWorkspaceError(
+                "message repository cannot cross workspace boundaries"
+            )
+        self._state.messages[(workspace_id, message.id)] = message
+        self._state.message_native[
+            (workspace_id, message.conversation_id, message.native.native_id)
+        ] = message.id
 
 
 class _ChannelEventRepository:
@@ -206,6 +264,10 @@ class _ChannelEventRepository:
 class _OutboxRepository:
     def __init__(self, state: _MemoryState) -> None:
         self._state = state
+
+    async def next_cursor(self, workspace_id: WorkspaceId) -> EventCursor:
+        events = self._state.outbox.get(workspace_id, [])
+        return events[-1].cursor.next() if events else EventCursor(1)
 
     async def append(self, workspace_id: WorkspaceId, event: WorkspaceEvent) -> None:
         if workspace_id != event.workspace_id:
@@ -236,6 +298,9 @@ def _validate_limit(limit: int) -> None:
         raise DomainValidationError("repository limit must be a positive integer")
 
 
+_RepositoryT = TypeVar("_RepositoryT")
+
+
 class MemoryUnitOfWork:
     """Lock-protected copy-on-write unit of work for tests and prototypes."""
 
@@ -245,6 +310,8 @@ class MemoryUnitOfWork:
         self._commit_requested = False
         self._entered = False
         self._workspaces: _WorkspaceRepository | None = None
+        self._contacts: _ContactRepository | None = None
+        self._external_identities: _ExternalIdentityRepository | None = None
         self._conversations: _ConversationRepository | None = None
         self._messages: _MessageRepository | None = None
         self._channel_events: _ChannelEventRepository | None = None
@@ -257,6 +324,8 @@ class MemoryUnitOfWork:
         self._entered = True
         self._state = self._database._state.clone()
         self._workspaces = _WorkspaceRepository(self._state)
+        self._contacts = _ContactRepository(self._state)
+        self._external_identities = _ExternalIdentityRepository(self._state)
         self._conversations = _ConversationRepository(self._state)
         self._messages = _MessageRepository(self._state)
         self._channel_events = _ChannelEventRepository(self._state)
@@ -283,6 +352,14 @@ class MemoryUnitOfWork:
     @property
     def workspaces(self) -> _WorkspaceRepository:
         return self._require_repository(self._workspaces)
+
+    @property
+    def contacts(self) -> _ContactRepository:
+        return self._require_repository(self._contacts)
+
+    @property
+    def external_identities(self) -> _ExternalIdentityRepository:
+        return self._require_repository(self._external_identities)
 
     @property
     def conversations(self) -> _ConversationRepository:
@@ -312,7 +389,10 @@ class MemoryUnitOfWork:
         if not self._entered:
             raise RuntimeError("memory unit of work must be entered before use")
 
-    def _require_repository(self, repository):
+    def _require_repository(
+        self,
+        repository: _RepositoryT | None,
+    ) -> _RepositoryT:
         self._require_entered()
         assert repository is not None
         return repository

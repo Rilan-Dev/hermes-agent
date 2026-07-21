@@ -4,7 +4,12 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from .errors import CrossWorkspaceError, DomainValidationError
-from .ids import ConnectionId, ContactId, ExternalIdentityId, WorkspaceId
+from .ids import (
+    ConnectionId,
+    ContactId,
+    ExternalIdentityId,
+    WorkspaceId,
+)
 from .time import require_utc
 
 
@@ -66,6 +71,29 @@ class ChannelConnection:
 
 
 @dataclass(frozen=True, slots=True)
+class Contact:
+    id: ContactId
+    workspace_id: WorkspaceId
+    display_name: str
+    created_at: datetime
+
+    @classmethod
+    def create(
+        cls,
+        *,
+        workspace_id: WorkspaceId,
+        display_name: str,
+        created_at: datetime,
+    ) -> Contact:
+        return cls(
+            id=ContactId.new(),
+            workspace_id=workspace_id,
+            display_name=_required_text(display_name, field="contact display name"),
+            created_at=require_utc(created_at, field="contact created_at"),
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class ExternalIdentity:
     id: ExternalIdentityId
     workspace_id: WorkspaceId
@@ -94,7 +122,9 @@ class ExternalIdentity:
             raise DomainValidationError(
                 "external identity platform must match the channel connection"
             )
-        normalized_name = display_name.strip() if isinstance(display_name, str) else None
+        normalized_name = (
+            display_name.strip() if isinstance(display_name, str) else None
+        )
         return cls(
             id=ExternalIdentityId.new(),
             workspace_id=workspace_id,
