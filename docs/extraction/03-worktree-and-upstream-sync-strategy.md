@@ -118,7 +118,7 @@ version: 1
 source:
   repository: Rilan-Dev/hermes-agent
   ref: main
-  sha: e3ce380c068f532fcceb2c087310fcc98da4ee38
+  sha: 18bb6f1aeaa334badee6271fc3337f39ca6bfcfb
 include_roots:
   - source: plugins/platforms
     destination: plugins/platforms
