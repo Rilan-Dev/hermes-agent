@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
-from agentic_platform.storage.postgres.protocols import PostgresConnection
+from agentic_platform.storage.postgres.protocols import MigrationConnection
 
 
 _MIGRATION_FILE = re.compile(
@@ -143,7 +143,7 @@ _DELETE_HISTORY_SQL = (
 class MigrationRunner:
     def __init__(
         self,
-        connection: PostgresConnection,
+        connection: MigrationConnection,
         migrations: Sequence[Migration],
     ) -> None:
         self._connection = connection
