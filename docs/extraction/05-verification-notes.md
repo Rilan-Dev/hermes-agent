@@ -1,7 +1,7 @@
 # Verification Notes
 
 **Status:** Final planning verification notes  
-**Branch:** `planning/channels-providers-extraction`
+**Branch:** `planning/channels-providers-extraction-latest`
 
 ## Corrections applied
 

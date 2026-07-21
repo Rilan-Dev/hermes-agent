@@ -2,8 +2,8 @@
 
 **Status:** Review draft — documentation only  
 **Repository:** `Rilan-Dev/hermes-agent`  
-**Verified source ref:** `main` at `d7b36070ef807841699ad32c5b6af547fee3ff64`  
-**Planning branch:** `planning/channels-providers-extraction`
+**Verified source ref:** `main` at `e3ce380c068f532fcceb2c087310fcc98da4ee38`  
+**Planning branch:** `planning/channels-providers-extraction-latest`
 
 ## 1. Goal
 
