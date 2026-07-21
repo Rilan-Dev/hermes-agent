@@ -12,6 +12,7 @@ from agentic_platform.domain.ids import (
 )
 from agentic_platform.domain.inbox import Conversation, Message
 from agentic_platform.domain.workspaces import Workspace
+from agentic_platform.ports.event_bus import EventCursor, WorkspaceEvent
 
 
 class WorkspaceRepository(Protocol):
@@ -98,6 +99,22 @@ class ChannelEventRepository(Protocol):
     ) -> None: ...
 
 
+class OutboxRepository(Protocol):
+    async def append(
+        self,
+        workspace_id: WorkspaceId,
+        event: WorkspaceEvent,
+    ) -> None: ...
+
+    async def read(
+        self,
+        workspace_id: WorkspaceId,
+        *,
+        after: EventCursor | None,
+        limit: int,
+    ) -> Sequence[WorkspaceEvent]: ...
+
+
 class UnitOfWork(Protocol):
     @property
     def workspaces(self) -> WorkspaceRepository: ...
@@ -110,6 +127,9 @@ class UnitOfWork(Protocol):
 
     @property
     def channel_events(self) -> ChannelEventRepository: ...
+
+    @property
+    def outbox(self) -> OutboxRepository: ...
 
     async def __aenter__(self) -> UnitOfWork: ...
 
