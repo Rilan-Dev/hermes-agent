@@ -130,6 +130,59 @@ jobs:
           path: test_durations.json
           retention-days: 1
 
+  platform-postgres:
+    name: "Platform PostgreSQL contracts"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: platform
+          POSTGRES_DB: platform_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U platform -d platform_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      POSTGRES_TEST_DSN: postgresql://platform@localhost:5432/platform_test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # 8.2.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
+
+      - name: Set up Python 3.11
+        run: uv python install 3.11
+
+      - name: Install locked PostgreSQL test dependencies
+        uses: ./.github/actions/retry
+        with:
+          command: uv sync --locked --python 3.11 --extra all --extra dev --extra matrix
+
+      - name: Run live PostgreSQL contracts
+        run: |
+          source .venv/bin/activate
+          python -m pytest \
+            platform/backend/tests/storage/postgres/test_live_repository_contract.py \
+            platform/backend/tests/storage/postgres/test_live_ingestion.py \
+            -v --tb=short
+
+      - name: Run complete platform backend suite
+        run: |
+          source .venv/bin/activate
+          POSTGRES_TEST_DSN="" python -m pytest platform/backend/tests -q
+
   # Merge per-slice duration data into a single cache, so future runs
   # (including PRs) get balanced slicing.
   save-durations:

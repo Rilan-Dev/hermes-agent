@@ -1,0 +1,5 @@
+DROP INDEX idx_audit_records_workspace_occurred;
+DROP INDEX idx_workspace_outbox_cursor;
+DROP INDEX idx_channel_events_idempotency;
+DROP INDEX idx_messages_workspace_conversation_sent;
+DROP INDEX idx_conversations_workspace_recent;

@@ -1,0 +1,17 @@
+DROP TABLE audit_records;
+DROP TABLE workspace_outbox;
+DROP TABLE raw_event_objects;
+DROP TABLE channel_events;
+DROP TABLE receipts;
+DROP TABLE reactions;
+DROP TABLE attachments;
+DROP TABLE messages;
+DROP TABLE participants;
+DROP TABLE conversations;
+DROP TABLE external_identities;
+DROP TABLE contacts;
+DROP TABLE channel_connections;
+DROP TABLE agents;
+DROP TABLE memberships;
+DROP TABLE users;
+DROP TABLE workspaces;
