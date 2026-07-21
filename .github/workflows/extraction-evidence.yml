@@ -84,6 +84,7 @@ jobs:
           PY
           rm -f tests/extraction/test_registry_snapshot_capture.py
           rm -f docs/extraction/EVIDENCE_RUN_REQUEST.md
+          rm -f docs/extraction/EVIDENCE_TRIGGER_2.md
 
       - name: Capture isolated runtime registries
         env:
@@ -121,11 +122,43 @@ jobs:
             --test-matrix docs/extraction/generated/phase-1-test-matrix.md
           git diff --exit-code -- docs/extraction/generated tests/extraction/snapshots
 
-      - name: Run extraction lint and tests
+      - name: Run extraction diagnostics
+        id: diagnostics
+        continue-on-error: true
         run: |
-          set -euo pipefail
-          uv run ruff check scripts/extraction tests/extraction
-          uv run pytest tests/extraction -q
+          set +e
+          mkdir -p extraction-diagnostics
+          set -o pipefail
+          uv run ruff check scripts/extraction tests/extraction \
+            2>&1 | tee extraction-diagnostics/ruff.log
+          RUFF_STATUS=${PIPESTATUS[0]}
+          uv run pytest tests/extraction -q \
+            2>&1 | tee extraction-diagnostics/pytest.log
+          PYTEST_STATUS=${PIPESTATUS[0]}
+          printf 'ruff_status=%s\npytest_status=%s\n' \
+            "$RUFF_STATUS" "$PYTEST_STATUS" \
+            | tee extraction-diagnostics/status.txt
+          echo "ruff_status=$RUFF_STATUS" >> "$GITHUB_OUTPUT"
+          echo "pytest_status=$PYTEST_STATUS" >> "$GITHUB_OUTPUT"
+          test "$RUFF_STATUS" -eq 0 && test "$PYTEST_STATUS" -eq 0
+
+      - name: Upload extraction diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: extraction-phase-1-diagnostics
+          path: |
+            extraction-diagnostics
+            tests/extraction/snapshots/registry-snapshot.json
+            docs/extraction/generated/phase-1-inventory.yaml
+            docs/extraction/generated/phase-1-inventory.md
+            docs/extraction/generated/phase-1-test-matrix.md
+          retention-days: 14
+
+      - name: Enforce extraction diagnostic result
+        run: |
+          test "${{ steps.diagnostics.outputs.ruff_status }}" = "0"
+          test "${{ steps.diagnostics.outputs.pytest_status }}" = "0"
 
       - name: Run selected existing characterization baseline
         env:
@@ -149,7 +182,7 @@ jobs:
             e3ce380c068f532fcceb2c087310fcc98da4ee38 HEAD
           UNEXPECTED="$(git diff --name-only \
             e3ce380c068f532fcceb2c087310fcc98da4ee38..HEAD \
-            | grep -Ev '^(\.github/workflows/extraction-evidence\.yml$|docs/extraction/|docs/superpowers/plans/|extracted/hermes-connect-kit/extraction-manifest\.yaml$|scripts/extraction/|tests/extraction/)' || true)"
+            | grep -Ev '^(\.github/workflows/extraction-evidence\.yml$|\.github/workflows/tests\.yml$|docs/extraction/|docs/superpowers/plans/|extracted/hermes-connect-kit/extraction-manifest\.yaml$|scripts/extraction/|tests/extraction/)' || true)"
           test -z "$UNEXPECTED" || {
             printf 'Unexpected production changes:\n%s\n' "$UNEXPECTED"
             exit 1
