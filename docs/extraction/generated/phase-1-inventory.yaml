@@ -1,7 +1,7 @@
 schema_version: 1
 source_repository: Rilan-Dev/hermes-agent
 source_sha: 18bb6f1aeaa334badee6271fc3337f39ca6bfcfb
-inventory_head: 9de6d424828b0a2ffaec02da528e609881054949
+inventory_head: f4d2b2b9f437d041c0305c5d1529fb0267a888c2
 files:
 - source: agent/agent_init.py
   destination: compatibility/agent/agent_init.py
@@ -2519,33 +2519,6 @@ files:
   - hermes_cli/dashboard_auth/registry.py
   imports_out_of_scope: []
   external_imports: []
-- source: hermes_cli/dashboard_auth/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/hermes_cli/dashboard_auth/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Dashboard authentication contracts, registry, and provider-specific auth implementations.
-  sha256: 961062f948017ae348549f55e5d03cd23b8c25e120c540f3894b9c9b0747bff4
-  size_bytes: 1478
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
-- source: hermes_cli/dashboard_auth/__pycache__/base.cpython-311.pyc
-  destination: vendor/hermes_cli/dashboard_auth/__pycache__/base.cpython-311.pyc
-  classification: core
-  reason: Dashboard authentication contracts, registry, and provider-specific auth implementations.
-  sha256: 8e5014ff05c3bde5461be0e23c37655eb7eef487e7c75b88b4a005fdbfeabd19
-  size_bytes: 14988
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
-- source: hermes_cli/dashboard_auth/__pycache__/registry.cpython-311.pyc
-  destination: vendor/hermes_cli/dashboard_auth/__pycache__/registry.cpython-311.pyc
-  classification: core
-  reason: Dashboard authentication contracts, registry, and provider-specific auth implementations.
-  sha256: 8704a68b721fc3c05bb1a4e51d7efd9a5db8eb0b9b8705076d1790c163e4afb1
-  size_bytes: 5599
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: hermes_cli/dashboard_auth/audit.py
   destination: vendor/hermes_cli/dashboard_auth/audit.py
   classification: core
@@ -3513,15 +3486,6 @@ files:
   - providers/base.py
   imports_out_of_scope: []
   external_imports: []
-- source: plugins/model-providers/alibaba-coding-plan/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/alibaba-coding-plan/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: f03dc5669a5b65c7347792764dcd03430b83efdba9a5379a26081663c578222f
-  size_bytes: 1131
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: plugins/model-providers/alibaba-coding-plan/plugin.yaml
   destination: vendor/plugins/model-providers/alibaba-coding-plan/plugin.yaml
   classification: core
@@ -3540,15 +3504,6 @@ files:
   imports_in_scope:
   - providers/__init__.py
   - providers/base.py
-  imports_out_of_scope: []
-  external_imports: []
-- source: plugins/model-providers/alibaba/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/alibaba/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 0a003417c4fd0405d55ac58f629340c26a359819f4665862f7d5bd17f6c7bf5a
-  size_bytes: 670
-  imports_in_scope: []
   imports_out_of_scope: []
   external_imports: []
 - source: plugins/model-providers/alibaba/plugin.yaml
@@ -3575,15 +3530,6 @@ files:
   - json
   - logging
   - urllib
-- source: plugins/model-providers/anthropic/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/anthropic/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: ec8d0d10e22934c1547de08c719f26cd8ce33c14a45024d390ffe5985f0f3c63
-  size_bytes: 3319
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: plugins/model-providers/anthropic/plugin.yaml
   destination: vendor/plugins/model-providers/anthropic/plugin.yaml
   classification: core
@@ -3602,15 +3548,6 @@ files:
   imports_in_scope:
   - providers/__init__.py
   - providers/base.py
-  imports_out_of_scope: []
-  external_imports: []
-- source: plugins/model-providers/arcee/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/arcee/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: e20b58afdd7bcbf9b18a5d7a413cfb0b2359dd3a6e7564ab0feb4d474ffabe68
-  size_bytes: 599
-  imports_in_scope: []
   imports_out_of_scope: []
   external_imports: []
 - source: plugins/model-providers/arcee/plugin.yaml
@@ -3633,15 +3570,6 @@ files:
   - providers/base.py
   imports_out_of_scope: []
   external_imports: []
-- source: plugins/model-providers/azure-foundry/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/azure-foundry/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 20ac022e1ba0074c90f9ff5c74f7f155dd45b24576cc6c9bb13808c0d9438cc4
-  size_bytes: 979
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: plugins/model-providers/azure-foundry/plugin.yaml
   destination: vendor/plugins/model-providers/azure-foundry/plugin.yaml
   classification: core
@@ -3662,15 +3590,6 @@ files:
   - providers/base.py
   imports_out_of_scope: []
   external_imports: []
-- source: plugins/model-providers/bedrock/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/bedrock/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 290da29918cb68fa0d2e2d5348fbc559263fca4069bf1d1630c3f84c8e21f7cb
-  size_bytes: 1452
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: plugins/model-providers/bedrock/plugin.yaml
   destination: vendor/plugins/model-providers/bedrock/plugin.yaml
   classification: core
@@ -3689,15 +3608,6 @@ files:
   imports_in_scope:
   - providers/__init__.py
   - providers/base.py
-  imports_out_of_scope: []
-  external_imports: []
-- source: plugins/model-providers/copilot-acp/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/copilot-acp/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: f853abc98d61ef1d30809668cd9b8d41184ff587b77d83c8de248646f4b8b646
-  size_bytes: 1671
-  imports_in_scope: []
   imports_out_of_scope: []
   external_imports: []
 - source: plugins/model-providers/copilot-acp/plugin.yaml
@@ -3722,15 +3632,6 @@ files:
   imports_out_of_scope: []
   external_imports:
   - typing
-- source: plugins/model-providers/copilot/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/copilot/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 3cfb95ea3be093230eee9125334ffa1c07bfe8ee5719b36b1b01aea1e499b30d
-  size_bytes: 2691
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: plugins/model-providers/copilot/plugin.yaml
   destination: vendor/plugins/model-providers/copilot/plugin.yaml
   classification: core
@@ -3752,15 +3653,6 @@ files:
   imports_out_of_scope: []
   external_imports:
   - typing
-- source: plugins/model-providers/custom/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/custom/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 6d81fcb7f5c42baba1b5e599309d1ede621a2c0ddd943baf538bd9bea6ec4f21
-  size_bytes: 3537
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: plugins/model-providers/custom/plugin.yaml
   destination: vendor/plugins/model-providers/custom/plugin.yaml
   classification: core
@@ -3783,15 +3675,6 @@ files:
   imports_out_of_scope: []
   external_imports:
   - os
-- source: plugins/model-providers/deepinfra/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/deepinfra/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: d794f8a6b1f70b33079945b91620f0b102c51490ecd6392e5e4c0cd8f09c08af
-  size_bytes: 3411
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: plugins/model-providers/deepinfra/plugin.yaml
   destination: vendor/plugins/model-providers/deepinfra/plugin.yaml
   classification: core
@@ -3814,15 +3697,6 @@ files:
   external_imports:
   - __future__
   - typing
-- source: plugins/model-providers/deepseek/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/deepseek/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 082e3fe800062cf3600be2536f9af748f681608eea9967f87e3338918978a0ac
-  size_bytes: 4092
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: plugins/model-providers/deepseek/plugin.yaml
   destination: vendor/plugins/model-providers/deepseek/plugin.yaml
   classification: core
@@ -3841,15 +3715,6 @@ files:
   imports_in_scope:
   - providers/__init__.py
   - providers/base.py
-  imports_out_of_scope: []
-  external_imports: []
-- source: plugins/model-providers/fireworks/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/fireworks/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 153756c46442b0e8136cc9d970cf2e0ce7cc106f652552861b86660b834aa085
-  size_bytes: 1367
-  imports_in_scope: []
   imports_out_of_scope: []
   external_imports: []
 - source: plugins/model-providers/fireworks/plugin.yaml
@@ -3874,15 +3739,6 @@ files:
   imports_out_of_scope: []
   external_imports:
   - typing
-- source: plugins/model-providers/gemini/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/gemini/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: c3888614f9761faaa0f7ea52e9e15bbb82eb1135da8647952fae03cf98d3a578
-  size_bytes: 2930
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: plugins/model-providers/gemini/plugin.yaml
   destination: vendor/plugins/model-providers/gemini/plugin.yaml
   classification: core
@@ -3904,15 +3760,6 @@ files:
   imports_out_of_scope:
   - hermes_cli/__init__.py
   external_imports: []
-- source: plugins/model-providers/gmi/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/gmi/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 01e5330747e61da882a710c54e2efc04eec69acc84fbb936985cd354692aecf0
-  size_bytes: 1179
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: plugins/model-providers/gmi/plugin.yaml
   destination: vendor/plugins/model-providers/gmi/plugin.yaml
   classification: core
@@ -3933,15 +3780,6 @@ files:
   - providers/base.py
   imports_out_of_scope: []
   external_imports: []
-- source: plugins/model-providers/huggingface/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/huggingface/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 750f800332664866d78ec770b94172d295b512e13160b7a8d48c13bd24130bc2
-  size_bytes: 845
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: plugins/model-providers/huggingface/plugin.yaml
   destination: vendor/plugins/model-providers/huggingface/plugin.yaml
   classification: core
@@ -3960,15 +3798,6 @@ files:
   imports_in_scope:
   - providers/__init__.py
   - providers/base.py
-  imports_out_of_scope: []
-  external_imports: []
-- source: plugins/model-providers/kilocode/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/kilocode/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 82116588254903984050d47ad9dc9f7818dde3dfb77b578a81716689544ae58d
-  size_bytes: 678
-  imports_in_scope: []
   imports_out_of_scope: []
   external_imports: []
 - source: plugins/model-providers/kilocode/plugin.yaml
@@ -3993,15 +3822,6 @@ files:
   external_imports:
   - typing
   - urllib
-- source: plugins/model-providers/kimi-coding/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/kimi-coding/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: ddb2eb9b6fe0c5b7eaddf9216dd586026de6b3e3bb4b77ef49beec365cfa3c8c
-  size_bytes: 5683
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: plugins/model-providers/kimi-coding/plugin.yaml
   destination: vendor/plugins/model-providers/kimi-coding/plugin.yaml
   classification: core
@@ -4024,15 +3844,6 @@ files:
   external_imports:
   - typing
   - urllib
-- source: plugins/model-providers/minimax/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/minimax/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 8e6b7a041f881eb8bad0ee49c41bcd71ade9d25655da319145a8dfd1131c375b
-  size_bytes: 4435
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: plugins/model-providers/minimax/plugin.yaml
   destination: vendor/plugins/model-providers/minimax/plugin.yaml
   classification: core
@@ -4055,15 +3866,6 @@ files:
   - agent/portal_tags.py
   external_imports:
   - typing
-- source: plugins/model-providers/nous/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/nous/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: d4ba909583e70df10973778600ebbafa3afdb6394c684b82b1b8c0e3acea108e
-  size_bytes: 2572
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: plugins/model-providers/nous/plugin.yaml
   destination: vendor/plugins/model-providers/nous/plugin.yaml
   classification: core
@@ -4084,15 +3886,6 @@ files:
   - providers/base.py
   imports_out_of_scope: []
   external_imports: []
-- source: plugins/model-providers/novita/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/novita/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: e8a21ae4c6a653e94f7663bc48eaa5fe0b34b632aa01153fe48f4d62b230f295
-  size_bytes: 1008
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: plugins/model-providers/novita/plugin.yaml
   destination: vendor/plugins/model-providers/novita/plugin.yaml
   classification: core
@@ -4111,15 +3904,6 @@ files:
   imports_in_scope:
   - providers/__init__.py
   - providers/base.py
-  imports_out_of_scope: []
-  external_imports: []
-- source: plugins/model-providers/nvidia/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/nvidia/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 56e3dfde4f382678d94d77903a243adaed3c4cd5ba9f1f29b7f4e22c64a8ea21
-  size_bytes: 866
-  imports_in_scope: []
   imports_out_of_scope: []
   external_imports: []
 - source: plugins/model-providers/nvidia/plugin.yaml
@@ -4144,15 +3928,6 @@ files:
   external_imports:
   - __future__
   - typing
-- source: plugins/model-providers/ollama-cloud/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/ollama-cloud/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 8a73e097b62aed51643aff71b1c332e1fe23cedddede3e92f78f327ed1b797fa
-  size_bytes: 3328
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: plugins/model-providers/ollama-cloud/plugin.yaml
   destination: vendor/plugins/model-providers/ollama-cloud/plugin.yaml
   classification: core
@@ -4171,15 +3946,6 @@ files:
   imports_in_scope:
   - providers/__init__.py
   - providers/base.py
-  imports_out_of_scope: []
-  external_imports: []
-- source: plugins/model-providers/openai-codex/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/openai-codex/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 07ed78fe878d5711c4d7ab834e521f44130398777760b5fb0d0b1e24d4955a6d
-  size_bytes: 695
-  imports_in_scope: []
   imports_out_of_scope: []
   external_imports: []
 - source: plugins/model-providers/openai-codex/plugin.yaml
@@ -4204,15 +3970,6 @@ files:
   external_imports:
   - __future__
   - typing
-- source: plugins/model-providers/opencode-zen/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/opencode-zen/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 3a0463312ff4ebe98882f0db1e33d5ca9a046f9a0a6db4397da942c09a7fd133
-  size_bytes: 6162
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: plugins/model-providers/opencode-zen/plugin.yaml
   destination: vendor/plugins/model-providers/opencode-zen/plugin.yaml
   classification: core
@@ -4235,15 +3992,6 @@ files:
   external_imports:
   - logging
   - typing
-- source: plugins/model-providers/openrouter/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/openrouter/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: d459459bcbbecfe3a74223ccc7b76269e2420811e450407be926c429e9e6e42a
-  size_bytes: 6963
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: plugins/model-providers/openrouter/plugin.yaml
   destination: vendor/plugins/model-providers/openrouter/plugin.yaml
   classification: core
@@ -4265,15 +4013,6 @@ files:
   imports_out_of_scope: []
   external_imports:
   - typing
-- source: plugins/model-providers/qwen-oauth/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/qwen-oauth/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 78a2a3e419f17a7610df6c90407d012a08341475dea0e7c68a94b4f06b7b1055
-  size_bytes: 4954
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: plugins/model-providers/qwen-oauth/plugin.yaml
   destination: vendor/plugins/model-providers/qwen-oauth/plugin.yaml
   classification: core
@@ -4292,15 +4031,6 @@ files:
   imports_in_scope:
   - providers/__init__.py
   - providers/base.py
-  imports_out_of_scope: []
-  external_imports: []
-- source: plugins/model-providers/stepfun/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/stepfun/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: fdb646c7d3358079900057d6a9d538630a9576d15f78972d0f0e1e37a3ff7c25
-  size_bytes: 658
-  imports_in_scope: []
   imports_out_of_scope: []
   external_imports: []
 - source: plugins/model-providers/stepfun/plugin.yaml
@@ -4324,15 +4054,6 @@ files:
   imports_out_of_scope: []
   external_imports:
   - typing
-- source: plugins/model-providers/upstage/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/upstage/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: fd2a7df64e717013893587615da2745089633af4cccbb6545b71058abb599afe
-  size_bytes: 4482
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: plugins/model-providers/upstage/plugin.yaml
   destination: vendor/plugins/model-providers/upstage/plugin.yaml
   classification: core
@@ -4355,15 +4076,6 @@ files:
   imports_out_of_scope: []
   external_imports:
   - typing
-- source: plugins/model-providers/vertex/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/vertex/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 6c3e17fc4e7214dd96f922985df8039fda709d9ed68098753d92273512c2beb6
-  size_bytes: 3645
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: plugins/model-providers/vertex/plugin.yaml
   destination: vendor/plugins/model-providers/vertex/plugin.yaml
   classification: core
@@ -4384,15 +4096,6 @@ files:
   - providers/base.py
   imports_out_of_scope: []
   external_imports: []
-- source: plugins/model-providers/xai/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/xai/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 2b02dcbecfe318f69a662913f5d50080fab84d09047f5ac7d7ede13e8619e86d
-  size_bytes: 641
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: plugins/model-providers/xai/plugin.yaml
   destination: vendor/plugins/model-providers/xai/plugin.yaml
   classification: core
@@ -4411,15 +4114,6 @@ files:
   imports_in_scope:
   - providers/__init__.py
   - providers/base.py
-  imports_out_of_scope: []
-  external_imports: []
-- source: plugins/model-providers/xiaomi/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/xiaomi/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: a8a39a1ec2444aea4a18d23cb3e9603ecd380046694120cc8fecd65bb8117e9b
-  size_bytes: 693
-  imports_in_scope: []
   imports_out_of_scope: []
   external_imports: []
 - source: plugins/model-providers/xiaomi/plugin.yaml
@@ -4445,15 +4139,6 @@ files:
   - __future__
   - re
   - typing
-- source: plugins/model-providers/zai/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/plugins/model-providers/zai/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 8367f2778c65d32e296fddf39b6662891e635cee83350b8a916461be2e412381
-  size_bytes: 6196
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: plugins/model-providers/zai/plugin.yaml
   destination: vendor/plugins/model-providers/zai/plugin.yaml
   classification: core
@@ -5896,24 +5581,6 @@ files:
   - pathlib
   - pkgutil
   - sys
-- source: providers/__pycache__/__init__.cpython-311.pyc
-  destination: vendor/providers/__pycache__/__init__.cpython-311.pyc
-  classification: core
-  reason: Provider profile contract, aliases, lazy discovery, and compatibility modules.
-  sha256: 79290359e5ae6f2a9bd5c2ff1d7e11657d9714f58a58ad29125c987cc0fbaeeb
-  size_bytes: 8559
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
-- source: providers/__pycache__/base.cpython-311.pyc
-  destination: vendor/providers/__pycache__/base.cpython-311.pyc
-  classification: core
-  reason: Provider profile contract, aliases, lazy discovery, and compatibility modules.
-  sha256: f010a91d78ae6a0ca21edeca35badfe56f2c29d50826cb9ba9052ac5e08c7910
-  size_bytes: 10289
-  imports_in_scope: []
-  imports_out_of_scope: []
-  external_imports: []
 - source: providers/base.py
   destination: vendor/providers/base.py
   classification: core
