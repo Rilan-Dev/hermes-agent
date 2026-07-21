@@ -88,3 +88,34 @@ def test_blocking_findings_include_dirty_probe_and_import_errors(tmp_path: Path)
         "runtime probe error: tools:ImportError:missing",
         "unresolved local import: gateway/run.py:missing",
     )
+
+
+def test_optional_local_imports_are_reported_but_do_not_block(tmp_path: Path) -> None:
+    report = _report(tmp_path)
+    report = replace(
+        report,
+        python_graph=PythonGraph(
+            (),
+            (),
+            (),
+            (),
+            ("tui_gateway/render.py:agent.rich_output",),
+        ),
+    )
+
+    assert blocking_findings(report) == ()
+
+    write_reports(report, tmp_path / "out")
+    manifest = yaml.safe_load(
+        (tmp_path / "out" / "extraction-manifest.yaml").read_text(encoding="utf-8")
+    )
+    review = (tmp_path / "out" / "phase-0-review.md").read_text(encoding="utf-8")
+    dependency_map = (tmp_path / "out" / "dependency-test-map.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert manifest["optional_imports"] == [
+        "tui_gateway/render.py:agent.rich_output"
+    ]
+    assert "Optional local imports: 1" in review
+    assert "`tui_gateway/render.py:agent.rich_output`" in dependency_map
