@@ -161,13 +161,9 @@ jobs:
           test "${{ steps.diagnostics.outputs.pytest_status }}" = "0"
 
       - name: Run selected existing characterization baseline
-        env:
-          OPENROUTER_API_KEY: ""
-          OPENAI_API_KEY: ""
-          NOUS_API_KEY: ""
         run: |
           set -euo pipefail
-          uv run pytest \
+          scripts/run_tests.sh -j 4 \
             tests/providers \
             tests/gateway \
             tests/plugins/model_providers \
