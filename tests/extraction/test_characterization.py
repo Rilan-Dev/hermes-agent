@@ -81,6 +81,6 @@ def test_no_unresolved_internal_imports() -> None:
 def test_generated_reports_match_the_implementation_head() -> None:
     data = inventory()
     assert data["schema_version"] == 1
-    assert data["source_sha"] == "e3ce380c068f532fcceb2c087310fcc98da4ee38"
+    assert data["source_sha"] == "18bb6f1aeaa334badee6271fc3337f39ca6bfcfb"
     assert isinstance(data["inventory_head"], str)
     assert len(data["inventory_head"]) == 40
