@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      PHASE0_DIAGNOSTICS_DIR: ${{ runner.temp }}/phase0-diagnostics
+      PHASE0_DIAGNOSTICS_DIR: /tmp/phase0-inventory-diagnostics
     steps:
       - name: Checkout merge candidate
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -83,7 +83,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: phase0-inventory-diagnostics
-          path: ${{ runner.temp }}/phase0-diagnostics/
+          path: /tmp/phase0-inventory-diagnostics/
           if-no-files-found: error
           retention-days: 7
 
