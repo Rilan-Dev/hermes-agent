@@ -1,7 +1,7 @@
 schema_version: 1
 source_repository: Rilan-Dev/hermes-agent
-source_sha: e3ce380c068f532fcceb2c087310fcc98da4ee38
-inventory_head: 0831565617f44d4ae2d772daf5d9df3ef7421bd4
+source_sha: 18bb6f1aeaa334badee6271fc3337f39ca6bfcfb
+inventory_head: 9de6d424828b0a2ffaec02da528e609881054949
 files:
 - source: agent/agent_init.py
   destination: compatibility/agent/agent_init.py
@@ -2523,7 +2523,7 @@ files:
   destination: vendor/hermes_cli/dashboard_auth/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Dashboard authentication contracts, registry, and provider-specific auth implementations.
-  sha256: 445d261f4f48dc7c1219fb88ee9969fa9c8e9157fee2b477c9b4781e294ac26a
+  sha256: 961062f948017ae348549f55e5d03cd23b8c25e120c540f3894b9c9b0747bff4
   size_bytes: 1478
   imports_in_scope: []
   imports_out_of_scope: []
@@ -2532,7 +2532,7 @@ files:
   destination: vendor/hermes_cli/dashboard_auth/__pycache__/base.cpython-311.pyc
   classification: core
   reason: Dashboard authentication contracts, registry, and provider-specific auth implementations.
-  sha256: 10df45f2844d2d8c8325b504570ae82f641615eb2a9e5ecb3d96eb6132dd68da
+  sha256: 8e5014ff05c3bde5461be0e23c37655eb7eef487e7c75b88b4a005fdbfeabd19
   size_bytes: 14988
   imports_in_scope: []
   imports_out_of_scope: []
@@ -2541,7 +2541,7 @@ files:
   destination: vendor/hermes_cli/dashboard_auth/__pycache__/registry.cpython-311.pyc
   classification: core
   reason: Dashboard authentication contracts, registry, and provider-specific auth implementations.
-  sha256: 219e780ac27027ff95f52c8b5d966438ba0a28bb0e758d397d804271371d2fb3
+  sha256: 8704a68b721fc3c05bb1a4e51d7efd9a5db8eb0b9b8705076d1790c163e4afb1
   size_bytes: 5599
   imports_in_scope: []
   imports_out_of_scope: []
@@ -2870,8 +2870,8 @@ files:
   destination: reference/hermes_cli/main.py
   classification: optional_ui
   reason: Top-level CLI dispatch and provider, setup, and prompt integration.
-  sha256: d6bf89a33fb708376a7ab354cff8081a3c3726dbfb91d84bbb679cd667db596c
-  size_bytes: 627717
+  sha256: 72d8a88c3ea4c9667090f0768d1357d86905a6ea026d17ce8507c8f5ce71d2bc
+  size_bytes: 632677
   imports_in_scope:
   - agent/anthropic_adapter.py
   - agent/auxiliary_client.py
@@ -3010,6 +3010,7 @@ files:
   - hermes_cli/uninstall.py
   - hermes_cli/web_server.py
   - hermes_cli/webhook.py
+  - hermes_cli/windows_ssh_runtime.py
   - hermes_cli/xai_retirement.py
   - plugins/dashboard_auth/basic/__init__.py
   - plugins/memory/__init__.py
@@ -3516,7 +3517,7 @@ files:
   destination: vendor/plugins/model-providers/alibaba-coding-plan/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 60b58dfeaa4779c55f220b47b7d597fe90e6f01cb3f9c841e996a740ed6a4297
+  sha256: f03dc5669a5b65c7347792764dcd03430b83efdba9a5379a26081663c578222f
   size_bytes: 1131
   imports_in_scope: []
   imports_out_of_scope: []
@@ -3545,7 +3546,7 @@ files:
   destination: vendor/plugins/model-providers/alibaba/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 162abf6d1712dd696df823d4b9470112ae7e6b8e9d5c84fc6846fde7d0578d05
+  sha256: 0a003417c4fd0405d55ac58f629340c26a359819f4665862f7d5bd17f6c7bf5a
   size_bytes: 670
   imports_in_scope: []
   imports_out_of_scope: []
@@ -3578,7 +3579,7 @@ files:
   destination: vendor/plugins/model-providers/anthropic/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 68d3ec4fc5f387319c964e36c52f51b67ea8eaee4eae3ac14f69d63845a9fa46
+  sha256: ec8d0d10e22934c1547de08c719f26cd8ce33c14a45024d390ffe5985f0f3c63
   size_bytes: 3319
   imports_in_scope: []
   imports_out_of_scope: []
@@ -3607,7 +3608,7 @@ files:
   destination: vendor/plugins/model-providers/arcee/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 49db4597ea8f04f72cf64988b42853784c8cf8e96862bf14d7f433347fc7792b
+  sha256: e20b58afdd7bcbf9b18a5d7a413cfb0b2359dd3a6e7564ab0feb4d474ffabe68
   size_bytes: 599
   imports_in_scope: []
   imports_out_of_scope: []
@@ -3636,7 +3637,7 @@ files:
   destination: vendor/plugins/model-providers/azure-foundry/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 1245d9ab84c85da612b1e4f61bcd1455bc780b27504dc52f9a1b3e792c49caca
+  sha256: 20ac022e1ba0074c90f9ff5c74f7f155dd45b24576cc6c9bb13808c0d9438cc4
   size_bytes: 979
   imports_in_scope: []
   imports_out_of_scope: []
@@ -3665,7 +3666,7 @@ files:
   destination: vendor/plugins/model-providers/bedrock/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 038e758084ad65f22c83e5d3d4e8191f7c33d68d670cd036f948af641302220a
+  sha256: 290da29918cb68fa0d2e2d5348fbc559263fca4069bf1d1630c3f84c8e21f7cb
   size_bytes: 1452
   imports_in_scope: []
   imports_out_of_scope: []
@@ -3694,7 +3695,7 @@ files:
   destination: vendor/plugins/model-providers/copilot-acp/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 29fecb48f84e4b5e98040af9e11d903e756101f373a70cb84114ae6db9062b8f
+  sha256: f853abc98d61ef1d30809668cd9b8d41184ff587b77d83c8de248646f4b8b646
   size_bytes: 1671
   imports_in_scope: []
   imports_out_of_scope: []
@@ -3725,7 +3726,7 @@ files:
   destination: vendor/plugins/model-providers/copilot/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 32eb5f6769de954e7e7c868b8b9b5335fd043e09f5065d4982840a27fb7afff2
+  sha256: 3cfb95ea3be093230eee9125334ffa1c07bfe8ee5719b36b1b01aea1e499b30d
   size_bytes: 2691
   imports_in_scope: []
   imports_out_of_scope: []
@@ -3755,7 +3756,7 @@ files:
   destination: vendor/plugins/model-providers/custom/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: a935e0434cd3487e8ce0a85db7b9b8b177b037089c6b5e6a5bd006fdd216db9c
+  sha256: 6d81fcb7f5c42baba1b5e599309d1ede621a2c0ddd943baf538bd9bea6ec4f21
   size_bytes: 3537
   imports_in_scope: []
   imports_out_of_scope: []
@@ -3786,7 +3787,7 @@ files:
   destination: vendor/plugins/model-providers/deepinfra/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 88a0c767311991befbf13d4b35a241d2fd430976aff2d506f50a8341e3d7e78e
+  sha256: d794f8a6b1f70b33079945b91620f0b102c51490ecd6392e5e4c0cd8f09c08af
   size_bytes: 3411
   imports_in_scope: []
   imports_out_of_scope: []
@@ -3817,7 +3818,7 @@ files:
   destination: vendor/plugins/model-providers/deepseek/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 3f4c99cfbd216a129ba7e0f4dccd73d5a8eb1b6fccf405fc0ac9110e5ec8e26a
+  sha256: 082e3fe800062cf3600be2536f9af748f681608eea9967f87e3338918978a0ac
   size_bytes: 4092
   imports_in_scope: []
   imports_out_of_scope: []
@@ -3846,7 +3847,7 @@ files:
   destination: vendor/plugins/model-providers/fireworks/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 06148293fb406ad5da725fbd1f36e5770206a5e173598870ef7cf1b2963a048a
+  sha256: 153756c46442b0e8136cc9d970cf2e0ce7cc106f652552861b86660b834aa085
   size_bytes: 1367
   imports_in_scope: []
   imports_out_of_scope: []
@@ -3877,7 +3878,7 @@ files:
   destination: vendor/plugins/model-providers/gemini/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 331d1caf75ec3840a054fda9c31319c10f280e42f36529de7615c4f4306216f8
+  sha256: c3888614f9761faaa0f7ea52e9e15bbb82eb1135da8647952fae03cf98d3a578
   size_bytes: 2930
   imports_in_scope: []
   imports_out_of_scope: []
@@ -3907,7 +3908,7 @@ files:
   destination: vendor/plugins/model-providers/gmi/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 9ac6250be04b16b6760fb101a57c9057640c315439f1b2aa6cb818686f530d01
+  sha256: 01e5330747e61da882a710c54e2efc04eec69acc84fbb936985cd354692aecf0
   size_bytes: 1179
   imports_in_scope: []
   imports_out_of_scope: []
@@ -3936,7 +3937,7 @@ files:
   destination: vendor/plugins/model-providers/huggingface/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: f07d1913d74473d12c1966478231dca9ef731db42a07c39a24bf53e0d3214da6
+  sha256: 750f800332664866d78ec770b94172d295b512e13160b7a8d48c13bd24130bc2
   size_bytes: 845
   imports_in_scope: []
   imports_out_of_scope: []
@@ -3965,7 +3966,7 @@ files:
   destination: vendor/plugins/model-providers/kilocode/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 24a216c2c22dcabe70ac03263ac807004d8694e064c8d808ecbb36e633f52938
+  sha256: 82116588254903984050d47ad9dc9f7818dde3dfb77b578a81716689544ae58d
   size_bytes: 678
   imports_in_scope: []
   imports_out_of_scope: []
@@ -3996,7 +3997,7 @@ files:
   destination: vendor/plugins/model-providers/kimi-coding/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: a5730e11967bbe27a5e3c91049e704370482709ea914a91d53e96b829edfe4d0
+  sha256: ddb2eb9b6fe0c5b7eaddf9216dd586026de6b3e3bb4b77ef49beec365cfa3c8c
   size_bytes: 5683
   imports_in_scope: []
   imports_out_of_scope: []
@@ -4027,7 +4028,7 @@ files:
   destination: vendor/plugins/model-providers/minimax/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 11551ffc2931b034d4e709080098e8de450b1df01d35baa9a4a8585161d809f0
+  sha256: 8e6b7a041f881eb8bad0ee49c41bcd71ade9d25655da319145a8dfd1131c375b
   size_bytes: 4435
   imports_in_scope: []
   imports_out_of_scope: []
@@ -4058,7 +4059,7 @@ files:
   destination: vendor/plugins/model-providers/nous/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: f4b825fb44ae0249659a3df485da1d23830a2cc31d5235a192a9cfe11ca36d02
+  sha256: d4ba909583e70df10973778600ebbafa3afdb6394c684b82b1b8c0e3acea108e
   size_bytes: 2572
   imports_in_scope: []
   imports_out_of_scope: []
@@ -4087,7 +4088,7 @@ files:
   destination: vendor/plugins/model-providers/novita/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 6241f95c1c52f6e475e0119bc35cd91a64004f17c036569fe4e8d9ad648e5d77
+  sha256: e8a21ae4c6a653e94f7663bc48eaa5fe0b34b632aa01153fe48f4d62b230f295
   size_bytes: 1008
   imports_in_scope: []
   imports_out_of_scope: []
@@ -4116,7 +4117,7 @@ files:
   destination: vendor/plugins/model-providers/nvidia/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 3721e2bf82a0a2db2bce717d01e9e01d42c8164dca6cfc3efb163aa9c8583592
+  sha256: 56e3dfde4f382678d94d77903a243adaed3c4cd5ba9f1f29b7f4e22c64a8ea21
   size_bytes: 866
   imports_in_scope: []
   imports_out_of_scope: []
@@ -4147,7 +4148,7 @@ files:
   destination: vendor/plugins/model-providers/ollama-cloud/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 9bcafd62a6f3e371a383aac93a0bb5f7e7956fd530b93dce097db380a068190e
+  sha256: 8a73e097b62aed51643aff71b1c332e1fe23cedddede3e92f78f327ed1b797fa
   size_bytes: 3328
   imports_in_scope: []
   imports_out_of_scope: []
@@ -4176,7 +4177,7 @@ files:
   destination: vendor/plugins/model-providers/openai-codex/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 48f25b9f62c1ff99dede857f5993ab0b337ab6add3e3acd900751b2f94b70eb3
+  sha256: 07ed78fe878d5711c4d7ab834e521f44130398777760b5fb0d0b1e24d4955a6d
   size_bytes: 695
   imports_in_scope: []
   imports_out_of_scope: []
@@ -4207,7 +4208,7 @@ files:
   destination: vendor/plugins/model-providers/opencode-zen/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 13660cc43b8fec1433012002373225d98a7849983b1e1f1668aea3d5e6190625
+  sha256: 3a0463312ff4ebe98882f0db1e33d5ca9a046f9a0a6db4397da942c09a7fd133
   size_bytes: 6162
   imports_in_scope: []
   imports_out_of_scope: []
@@ -4238,7 +4239,7 @@ files:
   destination: vendor/plugins/model-providers/openrouter/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: bcf3ddd329db88942c4ed0a6d38d2b5f69334483e2c2087b5c1a6f340038b688
+  sha256: d459459bcbbecfe3a74223ccc7b76269e2420811e450407be926c429e9e6e42a
   size_bytes: 6963
   imports_in_scope: []
   imports_out_of_scope: []
@@ -4268,7 +4269,7 @@ files:
   destination: vendor/plugins/model-providers/qwen-oauth/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 829cf7cd87c992f686e35ecc1991ff285a864901f5faf9d3f74e1f081c94ecc6
+  sha256: 78a2a3e419f17a7610df6c90407d012a08341475dea0e7c68a94b4f06b7b1055
   size_bytes: 4954
   imports_in_scope: []
   imports_out_of_scope: []
@@ -4297,7 +4298,7 @@ files:
   destination: vendor/plugins/model-providers/stepfun/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 8f93b68ebe0b97db82bffc3bef53e5747bafb1b4b9f6c46147fe99f9ad0e1957
+  sha256: fdb646c7d3358079900057d6a9d538630a9576d15f78972d0f0e1e37a3ff7c25
   size_bytes: 658
   imports_in_scope: []
   imports_out_of_scope: []
@@ -4327,7 +4328,7 @@ files:
   destination: vendor/plugins/model-providers/upstage/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 0d42b7d9ab643f9c0de2c56e5554dc07d1d360eaf10ffbc69b6aee91cd207fd5
+  sha256: fd2a7df64e717013893587615da2745089633af4cccbb6545b71058abb599afe
   size_bytes: 4482
   imports_in_scope: []
   imports_out_of_scope: []
@@ -4358,7 +4359,7 @@ files:
   destination: vendor/plugins/model-providers/vertex/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: cb69e6b44276c62003573f0c8dbe48d6993fd54940743c00f87c47cf3d00514b
+  sha256: 6c3e17fc4e7214dd96f922985df8039fda709d9ed68098753d92273512c2beb6
   size_bytes: 3645
   imports_in_scope: []
   imports_out_of_scope: []
@@ -4387,7 +4388,7 @@ files:
   destination: vendor/plugins/model-providers/xai/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 33099b633e68aaba1e65120e952090508892fc9e50b6cda798f704d1bcefc4e5
+  sha256: 2b02dcbecfe318f69a662913f5d50080fab84d09047f5ac7d7ede13e8619e86d
   size_bytes: 641
   imports_in_scope: []
   imports_out_of_scope: []
@@ -4416,7 +4417,7 @@ files:
   destination: vendor/plugins/model-providers/xiaomi/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 6b2c64d7d57f85b21f1b64001c94c883f1211320329dfcc47631e5a25b8cd579
+  sha256: a8a39a1ec2444aea4a18d23cb3e9603ecd380046694120cc8fecd65bb8117e9b
   size_bytes: 693
   imports_in_scope: []
   imports_out_of_scope: []
@@ -4448,7 +4449,7 @@ files:
   destination: vendor/plugins/model-providers/zai/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Manifest-driven bundled AI model provider profiles.
-  sha256: 663e3cba9916da6b893d9b47a7b7247d24f28f48e597991f3ecd6f0559162b3b
+  sha256: 8367f2778c65d32e296fddf39b6662891e635cee83350b8a916461be2e412381
   size_bytes: 6196
   imports_in_scope: []
   imports_out_of_scope: []
@@ -5899,7 +5900,7 @@ files:
   destination: vendor/providers/__pycache__/__init__.cpython-311.pyc
   classification: core
   reason: Provider profile contract, aliases, lazy discovery, and compatibility modules.
-  sha256: d9d302740a7c2bd7e375c1145c8d7582923a5eb9a958c5ae311aaf2405f09031
+  sha256: 79290359e5ae6f2a9bd5c2ff1d7e11657d9714f58a58ad29125c987cc0fbaeeb
   size_bytes: 8559
   imports_in_scope: []
   imports_out_of_scope: []
@@ -5908,7 +5909,7 @@ files:
   destination: vendor/providers/__pycache__/base.cpython-311.pyc
   classification: core
   reason: Provider profile contract, aliases, lazy discovery, and compatibility modules.
-  sha256: 2bdcbb6c1ade507828a5bf0812c4bc030eb635dd64be8aae8340b22280c4516c
+  sha256: f010a91d78ae6a0ca21edeca35badfe56f2c29d50826cb9ba9052ac5e08c7910
   size_bytes: 10289
   imports_in_scope: []
   imports_out_of_scope: []
@@ -8947,6 +8948,8 @@ out_of_scope_imports:
   dependency: hermes_cli/web_server.py
 - source: hermes_cli/main.py
   dependency: hermes_cli/webhook.py
+- source: hermes_cli/main.py
+  dependency: hermes_cli/windows_ssh_runtime.py
 - source: hermes_cli/main.py
   dependency: hermes_cli/xai_retirement.py
 - source: hermes_cli/main.py
