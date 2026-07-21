@@ -1,6 +1,6 @@
 # Phase 1 Summary
 
-The refreshed inventory covers 322 scoped files, including channel/platform adapters, provider plugins and profiles, authentication surfaces, model and transport registries, onboarding surfaces, host integrations, and selected tests.
+The refreshed inventory covers 285 scoped source files, including channel/platform adapters, provider plugins and profiles, authentication surfaces, model and transport registries, onboarding surfaces, host integrations, and selected tests. The inventory excludes 37 generated Python cache and bytecode files that were incorrectly counted in the earlier draft.
 
 Observed registry totals:
 
