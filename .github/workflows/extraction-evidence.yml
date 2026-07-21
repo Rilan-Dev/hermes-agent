@@ -7,7 +7,7 @@ on:
     types: [opened, synchronize, reopened]
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: extraction-evidence-${{ github.event.pull_request.head.ref }}
@@ -184,19 +184,32 @@ jobs:
             exit 1
           }
 
-      - name: Commit verified evidence
+      - name: Package complete verified evidence
         run: |
           set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
+          git diff --binary HEAD -- \
             docs/extraction \
             docs/superpowers/plans \
             extracted/hermes-connect-kit/extraction-manifest.yaml \
-            tests/extraction
-          if git diff --cached --quiet; then
-            echo "No evidence changes to commit"
-            exit 0
-          fi
-          git commit -m "chore(extraction): refresh Phase 1 evidence on latest upstream"
-          git push origin HEAD:worktree/channels-providers-extraction-latest
+            tests/extraction \
+            > extraction-phase-1.patch
+          git diff --name-status HEAD -- \
+            docs/extraction \
+            docs/superpowers/plans \
+            extracted/hermes-connect-kit/extraction-manifest.yaml \
+            tests/extraction \
+            > extraction-phase-1-name-status.txt
+          tar -czf extraction-phase-1-complete.tar.gz \
+            docs/extraction \
+            docs/superpowers/plans/2026-07-21-channels-providers-phase-1-inventory.md \
+            extracted/hermes-connect-kit/extraction-manifest.yaml \
+            tests/extraction \
+            extraction-phase-1.patch \
+            extraction-phase-1-name-status.txt
+
+      - name: Upload complete verified evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: extraction-phase-1-complete
+          path: extraction-phase-1-complete.tar.gz
+          retention-days: 14
