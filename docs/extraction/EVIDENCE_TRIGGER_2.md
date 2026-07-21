@@ -1,3 +1,3 @@
-# Final Refreshed Evidence Trigger
+# Contents API Evidence Apply Trigger
 
-This marker-only change triggers the read-only Phase 1 evidence packaging workflow after the latest upstream/fork refresh. The verified workspace removes this marker before producing the complete artifact.
+This marker-only change triggers the fully verified Phase 1 workflow to apply the approved evidence paths to the staging branch through GitHub's Contents API. The workflow deletes this marker from the staged result.
