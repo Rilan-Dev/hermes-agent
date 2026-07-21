@@ -1,0 +1,7 @@
+name: openai-image
+kind: backend
+version: 1.0.0
+provides_tools:
+  - image_generate
+provides_hooks:
+  - pre_tool_call
