@@ -74,9 +74,15 @@ def discover_plugins(root: Path, roots: Sequence[Path]) -> list[PluginRecord]:
             if not isinstance(payload, dict):
                 raise InventoryError(f"{manifest}: manifest must be a mapping")
 
-            kind = str(payload.get("kind") or "").strip()
-            if not kind:
-                raise InventoryError(f"{manifest}: missing kind")
+            # Match hermes_cli.plugins.PluginManifest: omitted kind is the
+            # backwards-compatible standalone-plugin default. An explicitly
+            # blank value is malformed and must not be silently normalized.
+            if "kind" not in payload:
+                kind = "standalone"
+            else:
+                kind = str(payload.get("kind") or "").strip()
+                if not kind:
+                    raise InventoryError(f"{manifest}: blank kind")
 
             plugin_id = manifest.parent.name
             plugin_key = _plugin_key(repository, plugin_root, manifest.parent)
