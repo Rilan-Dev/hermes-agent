@@ -25,28 +25,31 @@ def registry() -> dict[str, object]:
 
 
 def test_platform_manifests_match_discovered_platform_plugins() -> None:
-    manifest_keys = {
-        item["key"] for item in inventory()["plugins"]["platforms"]
+    manifest_names = {
+        item["name"] for item in inventory()["plugins"]["platforms"]
     }
     registry_keys = {
         item["key"]
         for item in registry()["plugins"]
         if item["kind"] == "platform"
     }
-    assert manifest_keys == registry_keys
+    assert manifest_names == registry_keys
 
 
-def test_model_provider_manifests_match_discovered_plugins() -> None:
+def test_model_provider_manifests_register_provider_profiles() -> None:
     manifest_keys = {
         item["key"]
         for item in inventory()["plugins"]["model_providers"]
     }
-    registry_keys = {
-        item["key"]
-        for item in registry()["plugins"]
-        if item["kind"] == "model-provider"
+    profile_names = set(registry()["provider_profile_names"])
+
+    assert manifest_keys <= profile_names
+    assert profile_names - manifest_keys == {
+        "kimi-coding-cn",
+        "minimax-cn",
+        "minimax-oauth",
+        "opencode-go",
     }
-    assert manifest_keys == registry_keys
 
 
 def test_provider_catalog_preserves_canonical_order() -> None:
