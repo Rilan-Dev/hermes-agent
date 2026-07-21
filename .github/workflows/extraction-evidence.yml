@@ -83,6 +83,7 @@ jobs:
                   path.write_text(updated, encoding="utf-8", newline="\n")
           PY
           rm -f tests/extraction/test_registry_snapshot_capture.py
+          rm -f docs/extraction/EVIDENCE_RUN_REQUEST.md
 
       - name: Capture isolated runtime registries
         env:
