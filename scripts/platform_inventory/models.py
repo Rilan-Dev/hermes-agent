@@ -38,3 +38,26 @@ class PluginRecord:
     optional_env: tuple[str, ...]
     optional_dependencies: tuple[str, ...]
     files: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class FileRecord:
+    path: str
+    sha256: str
+    size_bytes: int
+    classification: str
+
+
+@dataclass(frozen=True, slots=True)
+class ImportEdge:
+    source: str
+    module: str
+    target: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class PythonGraph:
+    files: tuple[FileRecord, ...]
+    imports: tuple[ImportEdge, ...]
+    dynamic_imports: tuple[str, ...]
+    unresolved_local_imports: tuple[str, ...]
