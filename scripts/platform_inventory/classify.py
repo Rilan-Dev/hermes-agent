@@ -13,6 +13,8 @@ def classify_path(path: str) -> str:
         "plugins/model-providers/"
     ):
         return "core-plugin"
+    if path.startswith("plugins/"):
+        return "extension-plugin"
     if path.startswith("gateway/") or path.startswith("providers/"):
         return "core"
     if path.startswith("tools/") or p.name in {
