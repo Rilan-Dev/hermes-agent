@@ -1,0 +1,70 @@
+from pathlib import Path
+
+import pytest
+
+from scripts.extraction.filesystem_inventory import InventoryError, inventory_files
+from scripts.extraction.schema import (
+    Classification,
+    ExtractionManifest,
+    FileRule,
+    RootRule,
+)
+
+
+def manifest_for_tmp_tree(
+    *, explicit_files: tuple[FileRule, ...] = ()
+) -> ExtractionManifest:
+    return ExtractionManifest(
+        version=1,
+        source_repository="Rilan-Dev/hermes-agent",
+        source_sha="d7b36070ef807841699ad32c5b6af547fee3ff64",
+        dynamic_roots=(
+            RootRule(
+                path="plugins/platforms",
+                classification=Classification.CORE,
+                destination="vendor/plugins/platforms",
+                reason="test platform plugins",
+            ),
+        ),
+        explicit_files=explicit_files,
+        test_rules=(),
+        internal_module_roots=(),
+    )
+
+
+def test_inventory_is_recursive_sorted_and_hashed(tmp_path: Path) -> None:
+    plugin = tmp_path / "plugins/platforms/chat"
+    plugin.mkdir(parents=True)
+    (plugin / "__init__.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (plugin / "plugin.yaml").write_text(
+        "name: chat\nkind: platform\n", encoding="utf-8"
+    )
+
+    records = inventory_files(tmp_path, manifest_for_tmp_tree())
+
+    assert [item.source for item in records] == sorted(
+        item.source for item in records
+    )
+    assert all(len(item.sha256) == 64 for item in records)
+    assert {item.destination for item in records} == {
+        "vendor/plugins/platforms/chat/__init__.py",
+        "vendor/plugins/platforms/chat/plugin.yaml",
+    }
+    assert all(item.classification == "core" for item in records)
+
+
+def test_inventory_rejects_a_missing_explicit_file(tmp_path: Path) -> None:
+    (tmp_path / "plugins/platforms").mkdir(parents=True)
+    manifest = manifest_for_tmp_tree(
+        explicit_files=(
+            FileRule(
+                path="gateway/session.py",
+                classification=Classification.CORE,
+                destination="vendor/gateway/session.py",
+                reason="canonical sessions",
+            ),
+        )
+    )
+
+    with pytest.raises(InventoryError, match="missing explicit file"):
+        inventory_files(tmp_path, manifest)
