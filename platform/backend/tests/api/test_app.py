@@ -39,10 +39,7 @@ class FakeHermesCatalog:
         return self._ready
 
 
-def _headers(
-    workspace_id: WorkspaceId,
-    role: MembershipRole = MembershipRole.OPERATOR,
-):
+def _headers(workspace_id: WorkspaceId, role: MembershipRole = MembershipRole.OPERATOR):
     return {
         "X-User-ID": str(UserId.new()),
         "X-Workspace-ID": str(workspace_id),

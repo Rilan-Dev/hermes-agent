@@ -3,9 +3,9 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from agentic_platform.domain.errors import DomainValidationError
 from agentic_platform.domain.ids import WorkspaceId
 from agentic_platform.domain.inbox import Conversation
+from agentic_platform.domain.errors import DomainValidationError
 from agentic_platform.ports.repositories import UnitOfWork
 
 
