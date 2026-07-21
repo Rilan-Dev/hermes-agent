@@ -54,3 +54,24 @@ def test_scan_frontend_ignores_comments_and_non_source_files(tmp_path: Path) -> 
 
     assert "/api/not-source" not in result.api_paths
     assert "/api/external" not in result.api_paths
+
+
+def test_scan_frontend_decodes_js_escapes_without_python_escape_warnings(
+    tmp_path: Path,
+) -> None:
+    import warnings
+
+    web = tmp_path / "web" / "src"
+    web.mkdir(parents=True)
+    (web / "escaped.ts").write_text(
+        'const label = "Café";\n'
+        'const unknown = "\\q";\n'
+        'fetch("\\/api\\/messaging\\/platforms");\n',
+        encoding="utf-8",
+    )
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", DeprecationWarning)
+        result = scan_frontend(tmp_path)
+
+    assert result.api_paths == ("/api/messaging/platforms",)
