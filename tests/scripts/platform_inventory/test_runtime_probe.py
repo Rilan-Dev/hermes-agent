@@ -19,6 +19,9 @@ def _payload() -> dict:
         "canonical_providers": ["openai-api"],
         "model_catalog_providers": ["openai", "openai-api"],
         "transports": ["chat_completions", "codex"],
+        "service_providers": {"tts": ["edge", "openai"]},
+        "service_provider_builtins": {"tts": ["edge", "openai"]},
+        "service_provider_plugins": {"tts": []},
         "toolsets": {"web": ["web_extract", "web_search"]},
         "toolset_includes": {"web": []},
         "tools": ["web_extract", "web_search"],
@@ -35,6 +38,7 @@ def test_parse_probe_output_keeps_identifier_sets_separate() -> None:
     assert snapshot.model_catalog_providers == ("openai", "openai-api")
     assert snapshot.provider_aliases == {"openai": "openai-api"}
     assert snapshot.platform_deferred == ("telegram",)
+    assert snapshot.service_providers["tts"] == ("edge", "openai")
     assert snapshot.tool_to_toolset["web_search"] == "web"
 
 
