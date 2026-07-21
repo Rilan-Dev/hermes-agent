@@ -4,7 +4,7 @@
 
 **Goal:** Establish the browser-first platform backend, canonical omnichannel domain, durable event-ingestion boundary, realtime contract, and Hermes compatibility ports needed by later channel-specific interfaces.
 
-**Architecture:** Add a modular-monolith package under `platform/backend/app/`. Domain objects and service contracts remain independent of FastAPI, PostgreSQL, Redis, S3, and Hermes internals. Infrastructure adapters implement those contracts. The initial slice proves behavior with in-memory adapters; production adapters are added only after the domain and idempotency contracts are characterized.
+**Architecture:** Add a modular-monolith source-layout package under `platform/backend/src/agentic_platform/`. The filesystem retains the `platform/` product boundary while avoiding collision with Python's standard-library `platform` module. Domain objects and service contracts remain independent of FastAPI, PostgreSQL, Redis, S3, and Hermes internals. Infrastructure adapters implement those contracts. The initial slice proves behavior with in-memory adapters; production adapters are added only after the domain and idempotency contracts are characterized.
 
 **Phase 0 evidence used:** 93 plugin manifests, 20 runtime channels with zero manifest/runtime differences, 41 canonical providers, 79 registered tools, 222 frontend routes, 92 Electron bridge references, 775 scoped Python files, and one intentional optional local import.
 
@@ -12,7 +12,7 @@
 
 - Work on `worktree/agentic-platform-phase-1` in an isolated worktree/branch based on the final Phase 0 head.
 - Keep PR #1 draft and unmerged while Phase 1 is developed on a dependent branch.
-- New application code imports only `platform.backend.app.*` contracts or explicit `hermes_compat.public.*` facades.
+- New Python application code imports only `agentic_platform.*` contracts. The repository folder is named `platform/`, but it is never used as a Python package because it collides with the standard-library `platform` module.
 - No new product code may import arbitrary `gateway.*`, `hermes_cli.*`, `agent.*`, or `tools.*` modules directly.
 - Workspace ID is mandatory on every durable aggregate and repository query.
 - External channel events are idempotent by `(workspace_id, connection_id, platform_event_id)`.
@@ -26,65 +26,32 @@
 
 ```text
 platform/
-├── __init__.py
 ├── backend/
-│   ├── __init__.py
-│   ├── app/
-│   │   ├── __init__.py
-│   │   ├── api/
-│   │   │   ├── app.py
-│   │   │   ├── dependencies.py
-│   │   │   ├── errors.py
-│   │   │   ├── health.py
-│   │   │   ├── workspaces.py
-│   │   │   ├── inbox.py
-│   │   │   └── realtime.py
-│   │   ├── auth/
-│   │   │   ├── contracts.py
-│   │   │   ├── policies.py
-│   │   │   └── service.py
-│   │   ├── domain/
-│   │   │   ├── ids.py
-│   │   │   ├── time.py
-│   │   │   ├── workspaces.py
-│   │   │   ├── channels.py
-│   │   │   ├── inbox.py
-│   │   │   ├── events.py
-│   │   │   └── errors.py
-│   │   ├── ports/
-│   │   │   ├── repositories.py
-│   │   │   ├── event_bus.py
-│   │   │   ├── object_storage.py
-│   │   │   ├── secrets.py
-│   │   │   └── hermes.py
-│   │   ├── services/
-│   │   │   ├── workspaces.py
-│   │   │   ├── ingestion.py
-│   │   │   ├── inbox.py
-│   │   │   └── realtime.py
-│   │   ├── storage/
-│   │   │   ├── memory.py
-│   │   │   ├── postgres/
-│   │   │   ├── redis/
-│   │   │   └── s3/
-│   │   └── hermes_bridge/
-│   │       ├── descriptors.py
-│   │       ├── channels.py
-│   │       └── runtime.py
+│   ├── src/
+│   │   └── agentic_platform/
+│   │       ├── __init__.py
+│   │       ├── api/
+│   │       ├── auth/
+│   │       ├── domain/
+│   │       ├── ports/
+│   │       ├── services/
+│   │       ├── storage/
+│   │       ├── hermes_bridge/
+│   │       └── hermes_compat/public/
 │   ├── migrations/
 │   └── tests/
+│       ├── conftest.py
 │       ├── domain/
+│       ├── ports/
 │       ├── services/
 │       ├── api/
 │       ├── storage/
 │       └── hermes_bridge/
-├── web/
-│   └── src/
-│       ├── app/
-│       ├── features/inbox/
-│       └── channel-renderers/
-└── hermes_compat/
-    └── public/
+└── web/
+    └── src/
+        ├── app/
+        ├── features/inbox/
+        └── channel-renderers/
 ```
 
 ---
@@ -92,16 +59,15 @@ platform/
 ## Task 1: Canonical workspace and inbox domain contracts
 
 **Files:**
-- Create `platform/__init__.py`
-- Create `platform/backend/__init__.py`
-- Create `platform/backend/app/__init__.py`
-- Create `platform/backend/app/domain/ids.py`
-- Create `platform/backend/app/domain/time.py`
-- Create `platform/backend/app/domain/errors.py`
-- Create `platform/backend/app/domain/workspaces.py`
-- Create `platform/backend/app/domain/channels.py`
-- Create `platform/backend/app/domain/inbox.py`
-- Create `platform/backend/app/domain/events.py`
+- Create `platform/backend/src/agentic_platform/__init__.py`
+- Create `platform/backend/tests/conftest.py` to expose the backend `src/` directory during repository tests
+- Create `platform/backend/src/agentic_platform/domain/ids.py`
+- Create `platform/backend/src/agentic_platform/domain/time.py`
+- Create `platform/backend/src/agentic_platform/domain/errors.py`
+- Create `platform/backend/src/agentic_platform/domain/workspaces.py`
+- Create `platform/backend/src/agentic_platform/domain/channels.py`
+- Create `platform/backend/src/agentic_platform/domain/inbox.py`
+- Create `platform/backend/src/agentic_platform/domain/events.py`
 - Create tests under `platform/backend/tests/domain/`
 
 **Behavior:**
@@ -121,11 +87,11 @@ platform/
 ## Task 2: Repository and infrastructure ports
 
 **Files:**
-- Create `platform/backend/app/ports/repositories.py`
-- Create `platform/backend/app/ports/event_bus.py`
-- Create `platform/backend/app/ports/object_storage.py`
-- Create `platform/backend/app/ports/secrets.py`
-- Create `platform/backend/app/ports/hermes.py`
+- Create `platform/backend/src/agentic_platform/ports/repositories.py`
+- Create `platform/backend/src/agentic_platform/ports/event_bus.py`
+- Create `platform/backend/src/agentic_platform/ports/object_storage.py`
+- Create `platform/backend/src/agentic_platform/ports/secrets.py`
+- Create `platform/backend/src/agentic_platform/ports/hermes.py`
 - Create contract tests under `platform/backend/tests/ports/`
 
 **Behavior:**
@@ -140,7 +106,7 @@ platform/
 ## Task 3: In-memory adapters and deterministic transaction model
 
 **Files:**
-- Create `platform/backend/app/storage/memory.py`
+- Create `platform/backend/src/agentic_platform/storage/memory.py`
 - Create tests under `platform/backend/tests/storage/test_memory.py`
 
 **Behavior:**
@@ -154,8 +120,8 @@ platform/
 ## Task 4: Idempotent channel-event ingestion service
 
 **Files:**
-- Create `platform/backend/app/services/ingestion.py`
-- Create `platform/backend/app/services/inbox.py`
+- Create `platform/backend/src/agentic_platform/services/ingestion.py`
+- Create `platform/backend/src/agentic_platform/services/inbox.py`
 - Create tests under `platform/backend/tests/services/`
 
 **Behavior:**
@@ -172,10 +138,10 @@ platform/
 ## Task 5: Workspace authentication and RBAC core
 
 **Files:**
-- Create `platform/backend/app/auth/contracts.py`
-- Create `platform/backend/app/auth/policies.py`
-- Create `platform/backend/app/auth/service.py`
-- Create `platform/backend/app/services/workspaces.py`
+- Create `platform/backend/src/agentic_platform/auth/contracts.py`
+- Create `platform/backend/src/agentic_platform/auth/policies.py`
+- Create `platform/backend/src/agentic_platform/auth/service.py`
+- Create `platform/backend/src/agentic_platform/services/workspaces.py`
 - Create tests under `platform/backend/tests/auth/`
 
 **Behavior:**
@@ -189,12 +155,12 @@ platform/
 ## Task 6: FastAPI application shell and browser-safe API contracts
 
 **Files:**
-- Create `platform/backend/app/api/app.py`
-- Create `platform/backend/app/api/errors.py`
-- Create `platform/backend/app/api/dependencies.py`
-- Create `platform/backend/app/api/health.py`
-- Create `platform/backend/app/api/workspaces.py`
-- Create `platform/backend/app/api/inbox.py`
+- Create `platform/backend/src/agentic_platform/api/app.py`
+- Create `platform/backend/src/agentic_platform/api/errors.py`
+- Create `platform/backend/src/agentic_platform/api/dependencies.py`
+- Create `platform/backend/src/agentic_platform/api/health.py`
+- Create `platform/backend/src/agentic_platform/api/workspaces.py`
+- Create `platform/backend/src/agentic_platform/api/inbox.py`
 - Create API tests under `platform/backend/tests/api/`
 
 **Behavior:**
@@ -209,8 +175,8 @@ platform/
 ## Task 7: Realtime event contract and WebSocket stream
 
 **Files:**
-- Create `platform/backend/app/services/realtime.py`
-- Create `platform/backend/app/api/realtime.py`
+- Create `platform/backend/src/agentic_platform/services/realtime.py`
+- Create `platform/backend/src/agentic_platform/api/realtime.py`
 - Create tests under `platform/backend/tests/services/test_realtime.py` and `api/test_realtime.py`
 
 **Behavior:**
@@ -225,7 +191,7 @@ platform/
 
 **Files:**
 - Add Phase 1 backend dependency metadata with exact pins.
-- Create `platform/backend/app/storage/postgres/`
+- Create `platform/backend/src/agentic_platform/storage/postgres/`
 - Create `platform/backend/migrations/`
 - Create integration tests under `platform/backend/tests/storage/postgres/`
 
@@ -249,8 +215,8 @@ platform/
 ## Task 9: Redis coordination and S3-compatible object storage
 
 **Files:**
-- Create `platform/backend/app/storage/redis/`
-- Create `platform/backend/app/storage/s3/`
+- Create `platform/backend/src/agentic_platform/storage/redis/`
+- Create `platform/backend/src/agentic_platform/storage/s3/`
 - Add integration tests with isolated containers or explicit opt-in environment fixtures.
 
 **Behavior:**
@@ -263,10 +229,10 @@ platform/
 ## Task 10: Hermes compatibility facade and descriptor bridge
 
 **Files:**
-- Create `platform/hermes_compat/public/`
-- Create `platform/backend/app/hermes_bridge/descriptors.py`
-- Create `platform/backend/app/hermes_bridge/channels.py`
-- Create `platform/backend/app/hermes_bridge/runtime.py`
+- Create `platform/backend/src/agentic_platform/hermes_compat/public/`
+- Create `platform/backend/src/agentic_platform/hermes_bridge/descriptors.py`
+- Create `platform/backend/src/agentic_platform/hermes_bridge/channels.py`
+- Create `platform/backend/src/agentic_platform/hermes_bridge/runtime.py`
 - Create characterization tests under `platform/backend/tests/hermes_bridge/`
 
 **Behavior:**
