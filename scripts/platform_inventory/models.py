@@ -27,6 +27,8 @@ class SourceState:
 class PluginRecord:
     kind: str
     plugin_id: str
+    plugin_key: str
+    category: str | None
     manifest_name: str
     label: str | None
     version: str | None
@@ -37,6 +39,8 @@ class PluginRecord:
     required_env: tuple[str, ...]
     optional_env: tuple[str, ...]
     optional_dependencies: tuple[str, ...]
+    provides_tools: tuple[str, ...]
+    provides_hooks: tuple[str, ...]
     files: tuple[str, ...]
 
 
@@ -74,6 +78,9 @@ class RegistrySnapshot:
     canonical_providers: tuple[str, ...]
     model_catalog_providers: tuple[str, ...]
     transports: tuple[str, ...]
+    service_providers: dict[str, tuple[str, ...]]
+    service_provider_builtins: dict[str, tuple[str, ...]]
+    service_provider_plugins: dict[str, tuple[str, ...]]
     toolsets: dict[str, tuple[str, ...]]
     toolset_includes: dict[str, tuple[str, ...]]
     tools: tuple[str, ...]
