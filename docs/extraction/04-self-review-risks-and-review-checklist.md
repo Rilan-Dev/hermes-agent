@@ -1,11 +1,11 @@
 # Self-Review, Risks, and Review Checklist
 
 **Status:** Planning self-critique  
-**Scope:** Documents committed to `planning/channels-providers-extraction`
+**Scope:** Documents committed to `planning/channels-providers-extraction-latest`
 
 ## 1. What was verified
 
-The planning work verified the following directly against the fork at `main@d7b36070ef807841699ad32c5b6af547fee3ff64`:
+The planning work verified the following directly against the fork at `main@e3ce380c068f532fcceb2c087310fcc98da4ee38`:
 
 - repository and branch access;
 - gateway base adapter and platform registry;
