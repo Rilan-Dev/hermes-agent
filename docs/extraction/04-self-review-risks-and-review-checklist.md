@@ -5,7 +5,7 @@
 
 ## 1. What was verified
 
-The planning work verified the following directly against the fork at `main@e3ce380c068f532fcceb2c087310fcc98da4ee38`:
+The planning work verified the following directly against the fork at `main@18bb6f1aeaa334badee6271fc3337f39ca6bfcfb`:
 
 - repository and branch access;
 - gateway base adapter and platform registry;
