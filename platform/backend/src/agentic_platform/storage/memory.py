@@ -158,7 +158,6 @@ class _ConversationRepository:
         limit: int,
         after: str | None = None,
     ) -> Sequence[Conversation]:
-        del after
         _validate_limit(limit)
         values = [
             conversation
@@ -168,6 +167,7 @@ class _ConversationRepository:
             if stored_workspace_id == workspace_id
         ]
         values.sort(key=lambda item: (item.updated_at, str(item.id)), reverse=True)
+        values = _resume_after(values, after)
         return tuple(values[:limit])
 
     async def save(
@@ -217,7 +217,6 @@ class _MessageRepository:
         limit: int,
         after: str | None = None,
     ) -> Sequence[Message]:
-        del after
         _validate_limit(limit)
         values = [
             message
@@ -226,6 +225,7 @@ class _MessageRepository:
             and message.conversation_id == conversation_id
         ]
         values.sort(key=lambda item: (item.sent_at, str(item.id)))
+        values = _resume_after(values, after)
         return tuple(values[:limit])
 
     async def save(self, workspace_id: WorkspaceId, message: Message) -> None:
@@ -293,12 +293,21 @@ class _OutboxRepository:
         )[:limit]
 
 
+_RepositoryT = TypeVar("_RepositoryT")
+
+
+def _resume_after(values: list[_RepositoryT], after: str | None) -> list[_RepositoryT]:
+    if after is None:
+        return values
+    for index, value in enumerate(values):
+        if str(value.id) == after:
+            return values[index + 1 :]
+    return []
+
+
 def _validate_limit(limit: int) -> None:
     if not isinstance(limit, int) or isinstance(limit, bool) or limit <= 0:
         raise DomainValidationError("repository limit must be a positive integer")
-
-
-_RepositoryT = TypeVar("_RepositoryT")
 
 
 class MemoryUnitOfWork:
