@@ -41,6 +41,9 @@ def collect_snapshot() -> dict[str, Any]:
         "canonical_providers": [],
         "model_catalog_providers": [],
         "transports": [],
+        "service_providers": {},
+        "service_provider_builtins": {},
+        "service_provider_plugins": {},
         "toolsets": {},
         "toolset_includes": {},
         "tools": [],
@@ -105,6 +108,41 @@ def collect_snapshot() -> dict[str, Any]:
             getattr(transport_module, "_REGISTRY", {})
         )
 
+    def service_providers() -> None:
+        import importlib
+
+        families = (
+            ("image_gen", "agent.image_gen_registry"),
+            ("video_gen", "agent.video_gen_registry"),
+            ("tts", "agent.tts_registry"),
+            ("stt", "agent.transcription_registry"),
+            ("browser", "agent.browser_registry"),
+            ("web", "agent.web_search_registry"),
+        )
+        combined: dict[str, list[str]] = {}
+        builtins: dict[str, list[str]] = {}
+        plugins: dict[str, list[str]] = {}
+
+        for family, module_name in families:
+            module = importlib.import_module(module_name)
+            list_fn = getattr(module, "list_providers", None)
+            registered = (
+                _sorted_strings(
+                    getattr(provider, "name", "")
+                    for provider in list_fn()
+                    if getattr(provider, "name", "")
+                )
+                if callable(list_fn)
+                else []
+            )
+            builtin_names = _sorted_strings(getattr(module, "_BUILTIN_NAMES", ()))
+            plugins[family] = registered
+            builtins[family] = builtin_names
+            combined[family] = sorted(set(registered) | set(builtin_names))
+        payload["service_providers"] = combined
+        payload["service_provider_builtins"] = builtins
+        payload["service_provider_plugins"] = plugins
+
     def tools() -> None:
         from tools.registry import discover_builtin_tools, registry
 
@@ -135,6 +173,7 @@ def collect_snapshot() -> dict[str, Any]:
         ("canonical_providers", canonical_providers),
         ("model_catalog", model_catalog),
         ("transports", transports),
+        ("service_providers", service_providers),
         ("tools", tools),
     ):
         _capture(payload, section, callback)
