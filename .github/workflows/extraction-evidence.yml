@@ -214,15 +214,40 @@ jobs:
           path: extraction-phase-1-complete.tar.gz
           retention-days: 14
 
-      - name: Commit verified evidence to staging branch
+      - name: Apply verified evidence to staging through Contents API
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_BRANCH: apply/phase1-evidence-latest
         run: |
           set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            docs/extraction \
-            docs/superpowers/plans \
-            extracted/hermes-connect-kit/extraction-manifest.yaml \
-            tests/extraction
-          git commit -m "chore(extraction): stage verified Phase 1 evidence"
-          git push origin HEAD:apply/phase1-evidence-latest
+          while IFS=$'\t' read -r status path; do
+            test -n "$path" || continue
+            endpoint="repos/${GITHUB_REPOSITORY}/contents/${path}"
+            current_sha="$(gh api "$endpoint?ref=$TARGET_BRANCH" --jq .sha 2>/dev/null || true)"
+            if [[ "$status" == D* ]]; then
+              test -n "$current_sha" || continue
+              python3 - "$current_sha" "$TARGET_BRANCH" > payload.json <<'PY'
+          import json, sys
+          print(json.dumps({
+              "message": "chore(extraction): remove temporary Phase 1 evidence file",
+              "sha": sys.argv[1],
+              "branch": sys.argv[2],
+          }))
+          PY
+              gh api --method DELETE "$endpoint" --input payload.json >/dev/null
+              continue
+            fi
+            python3 - "$path" "$current_sha" "$TARGET_BRANCH" > payload.json <<'PY'
+          import base64, json, pathlib, sys
+          path, current_sha, branch = sys.argv[1:]
+          payload = {
+              "message": "chore(extraction): apply verified Phase 1 evidence",
+              "content": base64.b64encode(pathlib.Path(path).read_bytes()).decode("ascii"),
+              "branch": branch,
+          }
+          if current_sha:
+              payload["sha"] = current_sha
+          print(json.dumps(payload))
+          PY
+            gh api --method PUT "$endpoint" --input payload.json >/dev/null
+          done < extraction-phase-1-name-status.txt
