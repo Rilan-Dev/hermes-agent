@@ -112,6 +112,7 @@ def _manifest(payload: dict[str, Any]) -> dict[str, Any]:
             if item["classification"] == "host-runtime"
         ),
         "unresolved_imports": payload["python_graph"]["unresolved_local_imports"],
+        "optional_imports": payload["python_graph"]["optional_local_imports"],
         "runtime_probe_errors": payload["registries"]["probe_errors"],
     }
 
@@ -313,11 +314,17 @@ def _dependency_markdown(payload: dict[str, Any]) -> str:
         (name, len(values), "<br>".join(f"`{value}`" for value in values))
         for name, values in dependencies["tests_by_area"].items()
     ]
+    optional_imports = payload["python_graph"]["optional_local_imports"]
     return "\n".join(
         [
             "# Dependency and Test Map",
             "",
             f"Core Python requirements: **{len(dependencies['python_core'])}**",
+            "",
+            "## Optional local imports",
+            "",
+            "\n".join(f"- `{item}`" for item in optional_imports)
+            or "_None discovered._",
             "",
             "## Python optional extras",
             "",
@@ -374,6 +381,7 @@ def _review_markdown(report: InventoryReport, payload: dict[str, Any]) -> str:
             f"- Frontend routes: {len(payload['frontend']['routes'])}",
             f"- Electron bridge references: {len(payload['frontend']['electron_bridge_references'])}",
             f"- Scoped Python files: {len(payload['python_graph']['files'])}",
+            f"- Optional local imports: {len(payload['python_graph']['optional_local_imports'])}",
             "",
             "## Phase 1 gate",
             "",
