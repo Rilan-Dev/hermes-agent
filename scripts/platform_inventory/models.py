@@ -80,3 +80,12 @@ class RegistrySnapshot:
     tool_to_toolset: dict[str, str]
     imported_tool_modules: tuple[str, ...]
     probe_errors: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class FrontendMap:
+    routes: tuple[str, ...]
+    api_paths: tuple[str, ...]
+    websocket_paths: tuple[str, ...]
+    electron_bridge_references: tuple[str, ...]
+    static_catalog_references: tuple[str, ...]
