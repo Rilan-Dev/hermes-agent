@@ -1,0 +1,87 @@
+name: Phase 0 Inventory Diagnostics
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/platform_inventory/**"
+      - "tests/scripts/platform_inventory/**"
+      - "tests/fixtures/platform_inventory/**"
+      - ".github/workflows/phase0-inventory-diagnostics.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    name: Inventory integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout merge candidate
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@b75a909f75acd358c2196fb9a5f1299a9a8868a4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          python-version: "3.11"
+
+      - name: Install repository dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Record source state
+        run: |
+          mkdir -p phase0-diagnostics
+          git status --porcelain=v1 --untracked-files=all | tee phase0-diagnostics/git-status.txt
+          git rev-parse HEAD | tee phase0-diagnostics/checked-head.txt
+          git branch --show-current | tee phase0-diagnostics/checked-branch.txt
+
+      - name: Run Phase 0 tests
+        id: tests
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          uv run pytest tests/scripts/platform_inventory -vv -s 2>&1 | tee phase0-diagnostics/pytest.log
+
+      - name: Run inventory generator
+        id: generator
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          uv run python -m scripts.platform_inventory \
+            --root . \
+            --output phase0-diagnostics/generated \
+            generate 2>&1 | tee phase0-diagnostics/generator.log
+
+      - name: Write diagnostic summary
+        if: always()
+        run: |
+          {
+            echo "tests_outcome=${{ steps.tests.outcome }}"
+            echo "generator_outcome=${{ steps.generator.outcome }}"
+            if [ -f phase0-diagnostics/generated/phase-0-review.md ]; then
+              echo ""
+              cat phase0-diagnostics/generated/phase-0-review.md
+            fi
+          } | tee phase0-diagnostics/summary.txt
+
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase0-inventory-diagnostics
+          path: phase0-diagnostics/
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Enforce result
+        if: always()
+        run: |
+          test "${{ steps.tests.outcome }}" = "success"
+          test "${{ steps.generator.outcome }}" = "success"
