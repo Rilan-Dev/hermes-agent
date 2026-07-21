@@ -1,0 +1,175 @@
+name: Extraction Evidence
+
+on:
+  pull_request:
+    branches:
+      - planning/channels-providers-extraction-latest
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: extraction-evidence-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    if: >-
+      github.event.pull_request.head.ref == 'worktree/channels-providers-extraction-latest' &&
+      github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout refreshed work branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # 8.2.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
+
+      - name: Set up Python 3.11
+        run: uv python install 3.11
+
+      - name: Install locked dependencies
+        uses: ./.github/actions/retry
+        with:
+          command: uv sync --locked --python 3.11 --extra all --extra dev
+
+      - name: Refresh approved source baseline references
+        env:
+          OLD_SOURCE_SHA: d7b36070ef807841699ad32c5b6af547fee3ff64
+          NEW_SOURCE_SHA: e3ce380c068f532fcceb2c087310fcc98da4ee38
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import os
+          import re
+          import subprocess
+
+          old_sha = os.environ["OLD_SOURCE_SHA"]
+          new_sha = os.environ["NEW_SOURCE_SHA"]
+          matches = subprocess.run(
+              ["git", "grep", "-Il", "-e", old_sha, "-e", "channels-providers-extraction", "--", "."],
+              check=False,
+              text=True,
+              capture_output=True,
+          ).stdout.splitlines()
+          for raw in sorted(set(matches)):
+              path = Path(raw)
+              if path.as_posix() == ".github/workflows/extraction-evidence.yml":
+                  continue
+              text = path.read_text(encoding="utf-8")
+              updated = text.replace(old_sha, new_sha)
+              updated = re.sub(
+                  r"worktree/channels-providers-extraction(?!-latest)",
+                  "worktree/channels-providers-extraction-latest",
+                  updated,
+              )
+              updated = re.sub(
+                  r"planning/channels-providers-extraction(?!-latest)",
+                  "planning/channels-providers-extraction-latest",
+                  updated,
+              )
+              if updated != text:
+                  path.write_text(updated, encoding="utf-8", newline="\n")
+          PY
+          rm -f tests/extraction/test_registry_snapshot_capture.py
+          rm -f docs/extraction/EVIDENCE_RUN_REQUEST.md
+
+      - name: Capture isolated runtime registries
+        env:
+          HERMES_HOME: ${{ runner.temp }}/hermes-extraction-home
+          HERMES_ENABLE_PROJECT_PLUGINS: "0"
+          HERMES_SAFE_MODE: "0"
+          HERMES_PLUGINS_DEBUG: "0"
+          PYTHONHASHSEED: "0"
+          OPENROUTER_API_KEY: ""
+          OPENAI_API_KEY: ""
+          NOUS_API_KEY: ""
+        run: |
+          set -euo pipefail
+          mkdir -p tests/extraction/snapshots
+          uv run python -m scripts.extraction.registry_probe \
+            > tests/extraction/snapshots/registry-snapshot.json
+          uv run python -m json.tool \
+            tests/extraction/snapshots/registry-snapshot.json >/dev/null
+
+      - name: Generate deterministic Phase 1 inventory
+        run: |
+          set -euo pipefail
+          uv run python -m scripts.extraction.build_inventory \
+            --manifest extracted/hermes-connect-kit/extraction-manifest.yaml \
+            --registry-snapshot tests/extraction/snapshots/registry-snapshot.json \
+            --yaml docs/extraction/generated/phase-1-inventory.yaml \
+            --markdown docs/extraction/generated/phase-1-inventory.md \
+            --test-matrix docs/extraction/generated/phase-1-test-matrix.md
+          git add docs/extraction/generated tests/extraction/snapshots
+          uv run python -m scripts.extraction.build_inventory \
+            --manifest extracted/hermes-connect-kit/extraction-manifest.yaml \
+            --registry-snapshot tests/extraction/snapshots/registry-snapshot.json \
+            --yaml docs/extraction/generated/phase-1-inventory.yaml \
+            --markdown docs/extraction/generated/phase-1-inventory.md \
+            --test-matrix docs/extraction/generated/phase-1-test-matrix.md
+          git diff --exit-code -- docs/extraction/generated tests/extraction/snapshots
+
+      - name: Run extraction lint and tests
+        run: |
+          set -euo pipefail
+          uv run ruff check scripts/extraction tests/extraction
+          uv run pytest tests/extraction -q
+
+      - name: Run selected existing characterization baseline
+        env:
+          OPENROUTER_API_KEY: ""
+          OPENAI_API_KEY: ""
+          NOUS_API_KEY: ""
+        run: |
+          set -euo pipefail
+          uv run pytest \
+            tests/providers \
+            tests/gateway \
+            tests/plugins/model_providers \
+            tests/agent/transports \
+            tests/hermes_cli/test_provider_parity.py \
+            -q
+
+      - name: Prove production source is unchanged after refresh
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor \
+            e3ce380c068f532fcceb2c087310fcc98da4ee38 HEAD
+          UNEXPECTED="$(git diff --name-only \
+            e3ce380c068f532fcceb2c087310fcc98da4ee38..HEAD \
+            | grep -Ev '^(\.github/workflows/extraction-evidence\.yml$|docs/extraction/|docs/superpowers/plans/|extracted/hermes-connect-kit/extraction-manifest\.yaml$|scripts/extraction/|tests/extraction/)' || true)"
+          test -z "$UNEXPECTED" || {
+            printf 'Unexpected production changes:\n%s\n' "$UNEXPECTED"
+            exit 1
+          }
+
+      - name: Commit verified evidence and remove temporary workflow
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .github/workflows/extraction-evidence.yml
+          git add \
+            .github/workflows/extraction-evidence.yml \
+            docs/extraction \
+            docs/superpowers/plans \
+            extracted/hermes-connect-kit/extraction-manifest.yaml \
+            tests/extraction
+          if git diff --cached --quiet; then
+            echo "No evidence changes to commit"
+            exit 0
+          fi
+          git commit -m "chore(extraction): refresh Phase 1 evidence on latest upstream"
+          git push origin HEAD:worktree/channels-providers-extraction-latest
