@@ -1,7 +1,7 @@
 schema_version: 1
 source_repository: Rilan-Dev/hermes-agent
 source_sha: 18bb6f1aeaa334badee6271fc3337f39ca6bfcfb
-inventory_head: f4d2b2b9f437d041c0305c5d1529fb0267a888c2
+inventory_head: 2680f519f8d3e991a86b9111f604a85f9d903325
 files:
 - source: agent/agent_init.py
   destination: compatibility/agent/agent_init.py
