@@ -15,16 +15,22 @@ from .reports import blocking_findings, write_reports
 from .runtime_probe import probe_runtime
 from .source_state import read_source_state
 
-_PLUGIN_ROOTS = (Path("plugins/platforms"), Path("plugins/model-providers"))
+_PLUGIN_ROOTS = (Path("plugins"),)
 _PYTHON_ROOTS = (
+    Path("agent"),
     Path("gateway"),
     Path("providers"),
+    Path("plugins"),
     Path("hermes_cli"),
-    Path("agent/transports"),
     Path("tools"),
+    Path("cron"),
+    Path("tui_gateway"),
     Path("toolsets.py"),
     Path("toolset_distributions.py"),
-    Path("cron"),
+    Path("model_tools.py"),
+    Path("run_agent.py"),
+    Path("hermes_state.py"),
+    Path("mcp_serve.py"),
 )
 
 
