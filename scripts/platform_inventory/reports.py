@@ -79,8 +79,7 @@ def _manifest(payload: dict[str, Any]) -> dict[str, Any]:
             "remotes": payload["source"]["remotes"],
         },
         "include_roots": [
-            {"source": "plugins/platforms", "class": "core-plugin"},
-            {"source": "plugins/model-providers", "class": "core-plugin"},
+            {"source": "plugins", "class": "dynamic-plugin"},
             {"source": "gateway", "class": "core"},
             {"source": "providers", "class": "core"},
             {"source": "agent/transports", "class": "core"},
@@ -92,7 +91,7 @@ def _manifest(payload: dict[str, Any]) -> dict[str, Any]:
         "plugins": [
             {
                 "kind": plugin["kind"],
-                "id": plugin["plugin_id"],
+                "id": plugin["plugin_key"],
                 "manifest": plugin["manifest_path"],
                 "directory": plugin["directory"],
             }
@@ -124,9 +123,7 @@ def _table(headers: tuple[str, ...], rows: list[tuple[Any, ...]]) -> str:
     separator = "| " + " | ".join("---" for _ in headers) + " |"
     body = [
         "| "
-        + " | ".join(
-            str(value).replace("|", "\\|").replace("\n", " ") for value in row
-        )
+        + " | ".join(str(value).replace("|", "\\|").replace("\n", " ") for value in row)
         + " |"
         for row in rows
     ]
@@ -175,31 +172,38 @@ def _provider_markdown(payload: dict[str, Any]) -> str:
     registries = payload["registries"]
     sets = (
         ("Provider profiles", registries["provider_profiles"]),
-        (
-            "Profile aliases",
-            [f"{key} → {value}" for key, value in registries["provider_aliases"].items()],
-        ),
+        ("Profile aliases", [f"{k} → {v}" for k, v in registries["provider_aliases"].items()]),
         ("Auth registry", registries["auth_providers"]),
         ("Canonical catalog", registries["canonical_providers"]),
         ("Model catalog keys", registries["model_catalog_providers"]),
         ("Transport API modes", registries["transports"]),
     )
     rows = [(name, len(values), ", ".join(values) or "—") for name, values in sets]
+    service_rows = [
+        (
+            family,
+            ", ".join(registries["service_provider_builtins"].get(family, [])) or "—",
+            ", ".join(registries["service_provider_plugins"].get(family, [])) or "—",
+            ", ".join(values) or "—",
+        )
+        for family, values in registries["service_providers"].items()
+    ]
     all_ids: set[str] = set()
     for _, values in sets[:5]:
         for value in values:
             if " → " not in value:
                 all_ids.add(value)
-    membership_rows = [
-        (
-            identifier,
-            "yes" if identifier in registries["provider_profiles"] else "",
-            "yes" if identifier in registries["auth_providers"] else "",
-            "yes" if identifier in registries["canonical_providers"] else "",
-            "yes" if identifier in registries["model_catalog_providers"] else "",
+    membership_rows = []
+    for identifier in sorted(all_ids):
+        membership_rows.append(
+            (
+                identifier,
+                "yes" if identifier in registries["provider_profiles"] else "",
+                "yes" if identifier in registries["auth_providers"] else "",
+                "yes" if identifier in registries["canonical_providers"] else "",
+                "yes" if identifier in registries["model_catalog_providers"] else "",
+            )
         )
-        for identifier in sorted(all_ids)
-    ]
     return "\n".join(
         [
             "# AI Provider Capability Inventory",
@@ -207,6 +211,10 @@ def _provider_markdown(payload: dict[str, Any]) -> str:
             "Provider identities remain separate until explicit compatibility rules map them.",
             "",
             _table(("Registry", "Count", "Identifiers"), rows),
+            "",
+            "## Tool-specific provider families",
+            "",
+            _table(("Family", "Built-in", "Plugin", "Combined"), service_rows),
             "",
             "## Cross-registry membership",
             "",
@@ -217,15 +225,27 @@ def _provider_markdown(payload: dict[str, Any]) -> str:
 
 def _tool_markdown(payload: dict[str, Any]) -> str:
     registries = payload["registries"]
-    rows = [
-        (
-            name,
-            ", ".join(registries["toolset_includes"].get(name, [])) or "—",
-            len(tools),
-            ", ".join(tools) or "—",
-        )
-        for name, tools in registries["toolsets"].items()
+    declared_plugin_tools = [
+        (plugin["plugin_key"], tool)
+        for plugin in payload["plugins"]
+        for tool in plugin.get("provides_tools", [])
     ]
+    registered = set(registries["tools"])
+    declared_missing = [
+        (plugin_key, tool)
+        for plugin_key, tool in declared_plugin_tools
+        if tool not in registered
+    ]
+    rows = []
+    for name, tools in registries["toolsets"].items():
+        rows.append(
+            (
+                name,
+                ", ".join(registries["toolset_includes"].get(name, [])) or "—",
+                len(tools),
+                ", ".join(tools) or "—",
+            )
+        )
     tool_rows = [
         (name, registries["tool_to_toolset"].get(name, "unmapped"))
         for name in registries["tools"]
@@ -245,6 +265,14 @@ def _tool_markdown(payload: dict[str, Any]) -> str:
             "",
             _table(("Tool", "Toolset"), tool_rows),
             "",
+            "## Manifest-declared plugin tools",
+            "",
+            _table(("Plugin", "Tool"), declared_plugin_tools),
+            "",
+            "## Declared but not registered in isolated runtime",
+            "",
+            _table(("Plugin", "Tool"), declared_missing),
+            "",
             "MCP tools are runtime-generated from configured servers and are therefore a registration path, not a fixed source list.",
         ]
     )
@@ -257,23 +285,18 @@ def _frontend_markdown(payload: dict[str, Any]) -> str:
         ("REST API paths", frontend["api_paths"]),
         ("WebSocket paths", frontend["websocket_paths"]),
         ("Electron bridge references", frontend["electron_bridge_references"]),
-        (
-            "Static catalogs requiring parity checks",
-            frontend["static_catalog_references"],
-        ),
+        ("Static catalogs requiring parity checks", frontend["static_catalog_references"]),
     )
-    output = ["# Frontend and API Map", ""]
-    for heading, values in sections:
-        output.extend(
-            [
-                f"## {heading}",
-                "",
-                "\n".join(f"- `{item}`" for item in values)
-                or "_None discovered._",
-                "",
-            ]
-        )
-    return "\n".join(output)
+    return "\n".join(
+        [
+            "# Frontend and API Map",
+            "",
+            *[
+                f"## {heading}\n\n" + ("\n".join(f"- `{item}`" for item in values) or "_None discovered._")
+                for heading, values in sections
+            ],
+        ]
+    )
 
 
 def _dependency_markdown(payload: dict[str, Any]) -> str:
