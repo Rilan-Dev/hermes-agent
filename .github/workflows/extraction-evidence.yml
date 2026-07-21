@@ -184,14 +184,12 @@ jobs:
             exit 1
           }
 
-      - name: Commit verified evidence and remove temporary workflow
+      - name: Commit verified evidence
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          rm -f .github/workflows/extraction-evidence.yml
           git add \
-            .github/workflows/extraction-evidence.yml \
             docs/extraction \
             docs/superpowers/plans \
             extracted/hermes-connect-kit/extraction-manifest.yaml \
