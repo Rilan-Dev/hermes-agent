@@ -9,9 +9,7 @@ def test_cli_writes_source_state_json(monkeypatch, tmp_path: Path) -> None:
 
     monkeypatch.setattr(
         "scripts.platform_inventory.cli.read_source_state",
-        lambda root: SourceState(
-            root.resolve(), "test", "a" * 40, False, {"origin": "example"}
-        ),
+        lambda root: SourceState(root.resolve(), "test", "a" * 40, False, {"origin": "example"}),
     )
     output = tmp_path / "generated"
 
@@ -34,9 +32,7 @@ def test_generate_writes_reports_and_returns_zero(monkeypatch, tmp_path: Path) -
         "scripts.platform_inventory.cli.read_source_state",
         lambda root: SourceState(root.resolve(), "test", "b" * 40, False, {}),
     )
-    monkeypatch.setattr(
-        "scripts.platform_inventory.cli.discover_plugins", lambda *args: []
-    )
+    monkeypatch.setattr("scripts.platform_inventory.cli.discover_plugins", lambda *args: [])
     monkeypatch.setattr(
         "scripts.platform_inventory.cli.scan_python_graph",
         lambda *args: PythonGraph((), (), (), ()),
@@ -44,7 +40,12 @@ def test_generate_writes_reports_and_returns_zero(monkeypatch, tmp_path: Path) -
     monkeypatch.setattr(
         "scripts.platform_inventory.cli.probe_runtime",
         lambda *args: RegistrySnapshot(
-            (), (), (), (), {}, (), (), (), (), {}, {}, (), {}, (), ()
+            platforms=(), platform_concrete=(), platform_deferred=(),
+            provider_profiles=(), provider_aliases={}, auth_providers=(),
+            canonical_providers=(), model_catalog_providers=(), transports=(),
+            service_providers={}, service_provider_builtins={},
+            service_provider_plugins={}, toolsets={}, toolset_includes={},
+            tools=(), tool_to_toolset={}, imported_tool_modules=(), probe_errors=(),
         ),
     )
     monkeypatch.setattr(
@@ -62,9 +63,7 @@ def test_generate_writes_reports_and_returns_zero(monkeypatch, tmp_path: Path) -
     assert (output / "phase-0-review.md").exists()
 
 
-def test_generate_writes_reports_and_returns_two_on_probe_errors(
-    monkeypatch, tmp_path: Path
-) -> None:
+def test_generate_writes_reports_and_returns_two_on_probe_errors(monkeypatch, tmp_path: Path) -> None:
     from scripts.platform_inventory.models import (
         DependencyMap,
         FrontendMap,
@@ -80,21 +79,24 @@ def test_generate_writes_reports_and_returns_two_on_probe_errors(
         plugins=(),
         python_graph=PythonGraph((), (), (), ()),
         registries=RegistrySnapshot(
-            (),
-            (),
-            (),
-            (),
-            {},
-            (),
-            (),
-            (),
-            (),
-            {},
-            {},
-            (),
-            {},
-            (),
-            ("providers:ImportError:broken",),
+            platforms=(),
+            platform_concrete=(),
+            platform_deferred=(),
+            provider_profiles=(),
+            provider_aliases={},
+            auth_providers=(),
+            canonical_providers=(),
+            model_catalog_providers=(),
+            transports=(),
+            service_providers={},
+            service_provider_builtins={},
+            service_provider_plugins={},
+            toolsets={},
+            toolset_includes={},
+            tools=(),
+            tool_to_toolset={},
+            imported_tool_modules=(),
+            probe_errors=("providers:ImportError:broken",),
         ),
         frontend=FrontendMap((), (), (), (), ()),
         dependencies=DependencyMap((), {}, {}, {}),
