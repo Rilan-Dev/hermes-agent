@@ -1,0 +1,452 @@
+version: 1
+source_repository: Rilan-Dev/hermes-agent
+source_sha: d7b36070ef807841699ad32c5b6af547fee3ff64
+
+dynamic_roots:
+  - path: gateway/platforms
+    classification: core
+    destination: vendor/gateway/platforms
+    reason: Base adapter contract plus every direct and legacy messaging platform implementation.
+  - path: gateway/relay
+    classification: core
+    destination: vendor/gateway/relay
+    reason: Generic relay transport, connector capability, follow-up, and interrupt behavior.
+  - path: gateway/builtin_hooks
+    classification: core
+    destination: vendor/gateway/builtin_hooks
+    reason: Always-registered gateway lifecycle hooks used by channel dispatch.
+  - path: plugins/platforms
+    classification: core
+    destination: vendor/plugins/platforms
+    reason: Manifest-driven bundled messaging platform plugins and their setup and sender helpers.
+  - path: plugins/model-providers
+    classification: core
+    destination: vendor/plugins/model-providers
+    reason: Manifest-driven bundled AI model provider profiles.
+  - path: providers
+    classification: core
+    destination: vendor/providers
+    reason: Provider profile contract, aliases, lazy discovery, and compatibility modules.
+  - path: agent/transports
+    classification: core
+    destination: vendor/agent/transports
+    reason: Protocol-specific provider request and response transports.
+  - path: hermes_cli/dashboard_auth
+    classification: core
+    destination: vendor/hermes_cli/dashboard_auth
+    reason: Dashboard authentication contracts, registry, and provider-specific auth implementations.
+
+explicit_files:
+  - path: gateway/run.py
+    classification: host_port
+    destination: compatibility/gateway/run.py
+    reason: Gateway lifecycle and dispatch orchestration currently constructs the concrete Hermes agent.
+  - path: gateway/config.py
+    classification: core
+    destination: vendor/gateway/config.py
+    reason: Gateway and platform configuration with YAML and environment translation.
+  - path: gateway/platform_registry.py
+    classification: core
+    destination: vendor/gateway/platform_registry.py
+    reason: Lazy platform descriptors, factories, setup hooks, and standalone delivery metadata.
+  - path: gateway/session.py
+    classification: core
+    destination: vendor/gateway/session.py
+    reason: Canonical channel session keys and session persistence contract.
+  - path: gateway/delivery.py
+    classification: core
+    destination: vendor/gateway/delivery.py
+    reason: Reply, cross-platform, explicit target, home-channel, and background delivery.
+  - path: gateway/pairing.py
+    classification: core
+    destination: vendor/gateway/pairing.py
+    reason: Pairing codes and persisted source authorization state.
+  - path: gateway/authz_mixin.py
+    classification: core
+    destination: vendor/gateway/authz_mixin.py
+    reason: Shared gateway authorization and platform allowlist behavior.
+  - path: gateway/channel_directory.py
+    classification: core
+    destination: vendor/gateway/channel_directory.py
+    reason: Human-readable channel target resolution and cron delivery discovery.
+  - path: gateway/hooks.py
+    classification: core
+    destination: vendor/gateway/hooks.py
+    reason: Gateway hook discovery and lifecycle dispatch.
+  - path: gateway/mirror.py
+    classification: core
+    destination: vendor/gateway/mirror.py
+    reason: Cross-session and cross-platform message mirroring.
+  - path: gateway/status.py
+    classification: core
+    destination: vendor/gateway/status.py
+    reason: Profile and token scoped gateway locking and status.
+  - path: gateway/dead_targets.py
+    classification: core
+    destination: vendor/gateway/dead_targets.py
+    reason: Tracking of dead or unreachable outbound channel targets.
+  - path: gateway/stream_events.py
+    classification: core
+    destination: vendor/gateway/stream_events.py
+    reason: Streaming event structures and normalization.
+  - path: gateway/stream_dispatch.py
+    classification: core
+    destination: vendor/gateway/stream_dispatch.py
+    reason: Streaming event delivery and dispatch.
+  - path: gateway/slash_commands.py
+    classification: core
+    destination: vendor/gateway/slash_commands.py
+    reason: Gateway slash-command handlers including model and provider commands.
+  - path: hermes_cli/gateway.py
+    classification: optional_ui
+    destination: reference/hermes_cli/gateway.py
+    reason: Interactive platform setup, plugin enablement, status, and service management.
+  - path: hermes_cli/plugins.py
+    classification: core
+    destination: vendor/hermes_cli/plugins.py
+    reason: Plugin manifest scanning, precedence, enablement, and deferred platform registration.
+  - path: hermes_cli/commands.py
+    classification: core
+    destination: vendor/hermes_cli/commands.py
+    reason: Shared slash-command registry consumed by CLI and gateway surfaces.
+  - path: hermes_cli/config.py
+    classification: host_port
+    destination: compatibility/hermes_cli/config.py
+    reason: Hermes configuration schema, migrations, environment metadata, and atomic persistence.
+  - path: hermes_cli/main.py
+    classification: optional_ui
+    destination: reference/hermes_cli/main.py
+    reason: Top-level CLI dispatch and provider, setup, and prompt integration.
+  - path: cli.py
+    classification: optional_ui
+    destination: reference/cli.py
+    reason: Interactive terminal conversation orchestration and shared command behavior.
+  - path: hermes_constants.py
+    classification: host_port
+    destination: compatibility/hermes_constants.py
+    reason: Profile-aware Hermes home paths and shared endpoint constants.
+  - path: hermes_logging.py
+    classification: host_port
+    destination: compatibility/hermes_logging.py
+    reason: Profile-aware logging and process-safe log behavior.
+  - path: utils.py
+    classification: host_port
+    destination: compatibility/utils.py
+    reason: Shared environment, URL, and YAML helpers imported across the scoped subsystem.
+  - path: tools/send_message_tool.py
+    classification: core
+    destination: vendor/tools/send_message_tool.py
+    reason: Agent-facing explicit and standalone channel delivery integration.
+  - path: cron/jobs.py
+    classification: host_port
+    destination: compatibility/cron/jobs.py
+    reason: Scheduled job delivery target model consumed by channel delivery.
+  - path: cron/scheduler.py
+    classification: host_port
+    destination: compatibility/cron/scheduler.py
+    reason: Scheduled delivery and home-channel resolution.
+  - path: hermes_state.py
+    classification: host_port
+    destination: compatibility/hermes_state.py
+    reason: Hermes session persistence substrate used by agent and gateway surfaces.
+  - path: run_agent.py
+    classification: host_port
+    destination: compatibility/run_agent.py
+    reason: Concrete agent construction, streaming, credential rotation, and transport consumption.
+  - path: agent/agent_init.py
+    classification: host_port
+    destination: compatibility/agent/agent_init.py
+    reason: Concrete Hermes agent initialization and resolved provider consumption.
+  - path: model_tools.py
+    classification: host_port
+    destination: compatibility/model_tools.py
+    reason: Tool orchestration reached by the concrete Hermes agent runtime.
+  - path: toolsets.py
+    classification: host_port
+    destination: compatibility/toolsets.py
+    reason: Toolset definitions consumed by the concrete Hermes agent runtime.
+  - path: hermes_cli/auth.py
+    classification: core
+    destination: vendor/hermes_cli/auth.py
+    reason: Provider auth registry, persisted credentials, refresh, OAuth, API-key, external, and AWS flows.
+  - path: hermes_cli/auth_commands.py
+    classification: optional_ui
+    destination: reference/hermes_cli/auth_commands.py
+    reason: Interactive login, logout, and authentication command orchestration.
+  - path: hermes_cli/credential_lifecycle.py
+    classification: core
+    destination: vendor/hermes_cli/credential_lifecycle.py
+    reason: Credential add, remove, and update lifecycle behavior.
+  - path: agent/credential_pool.py
+    classification: core
+    destination: vendor/agent/credential_pool.py
+    reason: Credential pooling, rotation, provider matching, and custom pool keys.
+  - path: agent/credential_persistence.py
+    classification: core
+    destination: vendor/agent/credential_persistence.py
+    reason: Safe credential persistence and sanitization.
+  - path: agent/secret_scope.py
+    classification: host_port
+    destination: compatibility/agent/secret_scope.py
+    reason: Profile and workstream scoped secret reads.
+  - path: hermes_cli/provider_catalog.py
+    classification: core
+    destination: vendor/hermes_cli/provider_catalog.py
+    reason: Unified provider descriptors and CLI and GUI parity boundary.
+  - path: hermes_cli/inventory.py
+    classification: core
+    destination: vendor/hermes_cli/inventory.py
+    reason: Shared provider and model inventory payload for UI and picker consumers.
+  - path: hermes_cli/models.py
+    classification: core
+    destination: vendor/hermes_cli/models.py
+    reason: Canonical providers, model catalogs, pricing, and capability metadata.
+  - path: hermes_cli/providers.py
+    classification: core
+    destination: vendor/hermes_cli/providers.py
+    reason: Provider overlays, routing semantics, and metadata helpers.
+  - path: hermes_cli/model_switch.py
+    classification: core
+    destination: vendor/hermes_cli/model_switch.py
+    reason: Authenticated provider discovery and model selection.
+  - path: hermes_cli/model_setup_flows.py
+    classification: core
+    destination: vendor/hermes_cli/model_setup_flows.py
+    reason: Provider-specific setup and model selection workflows.
+  - path: hermes_cli/setup.py
+    classification: optional_ui
+    destination: reference/hermes_cli/setup.py
+    reason: First-run and setup wizard presentation and persistence orchestration.
+  - path: hermes_cli/doctor.py
+    classification: core
+    destination: vendor/hermes_cli/doctor.py
+    reason: Provider and configuration health checks.
+  - path: hermes_cli/azure_detect.py
+    classification: core
+    destination: vendor/hermes_cli/azure_detect.py
+    reason: Azure endpoint and API-mode detection.
+  - path: hermes_cli/codex_models.py
+    classification: core
+    destination: vendor/hermes_cli/codex_models.py
+    reason: Codex model catalog behavior.
+  - path: hermes_cli/portal_cli.py
+    classification: optional_ui
+    destination: reference/hermes_cli/portal_cli.py
+    reason: Nous Portal onboarding and account controls.
+  - path: hermes_cli/nous_subscription.py
+    classification: core
+    destination: vendor/hermes_cli/nous_subscription.py
+    reason: Nous subscription and tier behavior used during provider setup.
+  - path: agent/models_dev.py
+    classification: core
+    destination: vendor/agent/models_dev.py
+    reason: Model metadata and capability cache used by picker and runtime paths.
+  - path: agent/usage_pricing.py
+    classification: core
+    destination: vendor/agent/usage_pricing.py
+    reason: Provider usage and pricing metadata.
+  - path: agent/auxiliary_client.py
+    classification: core
+    destination: vendor/agent/auxiliary_client.py
+    reason: Auxiliary model client using shared provider runtime resolution.
+  - path: hermes_cli/runtime_provider.py
+    classification: core
+    destination: vendor/hermes_cli/runtime_provider.py
+    reason: Effective provider, endpoint, API mode, credential, and pool resolution.
+  - path: agent/anthropic_adapter.py
+    classification: core
+    destination: vendor/agent/anthropic_adapter.py
+    reason: Anthropic message and tool conversion helpers.
+  - path: agent/chat_completion_helpers.py
+    classification: core
+    destination: vendor/agent/chat_completion_helpers.py
+    reason: Shared chat-completion and response request helpers.
+  - path: agent/agent_runtime_helpers.py
+    classification: host_port
+    destination: compatibility/agent/agent_runtime_helpers.py
+    reason: Runtime request preparation tied to concrete Hermes agent behavior.
+  - path: agent/turn_context.py
+    classification: host_port
+    destination: compatibility/agent/turn_context.py
+    reason: Per-turn concrete Hermes runtime context.
+  - path: agent/conversation_loop.py
+    classification: host_port
+    destination: compatibility/agent/conversation_loop.py
+    reason: Concrete conversation loop consuming transports and provider profiles.
+  - path: agent/moa_loop.py
+    classification: core
+    destination: vendor/agent/moa_loop.py
+    reason: Virtual multi-model provider orchestration.
+  - path: agent/onboarding.py
+    classification: core
+    destination: vendor/agent/onboarding.py
+    reason: Contextual first-contact hints and consent-gated profile onboarding.
+  - path: hermes_cli/telegram_managed_bot.py
+    classification: optional_ui
+    destination: reference/hermes_cli/telegram_managed_bot.py
+    reason: Managed Telegram setup workflow.
+  - path: hermes_cli/dingtalk_auth.py
+    classification: optional_ui
+    destination: reference/hermes_cli/dingtalk_auth.py
+    reason: DingTalk authentication and setup workflow.
+  - path: apps/desktop/src/components/onboarding/index.tsx
+    classification: optional_ui
+    destination: reference/apps/desktop/src/components/onboarding/index.tsx
+    reason: Desktop onboarding entry surface.
+  - path: apps/desktop/src/components/onboarding/flow.tsx
+    classification: optional_ui
+    destination: reference/apps/desktop/src/components/onboarding/flow.tsx
+    reason: Desktop onboarding flow orchestration.
+  - path: apps/desktop/src/components/onboarding/providers.tsx
+    classification: optional_ui
+    destination: reference/apps/desktop/src/components/onboarding/providers.tsx
+    reason: Desktop provider onboarding presentation and ordering metadata.
+  - path: apps/desktop/src/components/onboarding/glyph.tsx
+    classification: optional_ui
+    destination: reference/apps/desktop/src/components/onboarding/glyph.tsx
+    reason: Desktop onboarding glyph presentation.
+  - path: apps/desktop/src/store/onboarding.ts
+    classification: optional_ui
+    destination: reference/apps/desktop/src/store/onboarding.ts
+    reason: Desktop onboarding state machine and persistence.
+  - path: apps/desktop/src/lib/model-options.ts
+    classification: optional_ui
+    destination: reference/apps/desktop/src/lib/model-options.ts
+    reason: Desktop model option adaptation from backend inventory.
+  - path: apps/desktop/src/components/model-picker.tsx
+    classification: optional_ui
+    destination: reference/apps/desktop/src/components/model-picker.tsx
+    reason: Desktop provider and model picker consumer.
+  - path: apps/desktop/src/app/settings/providers-settings.tsx
+    classification: optional_ui
+    destination: reference/apps/desktop/src/app/settings/providers-settings.tsx
+    reason: Desktop provider accounts and API-key settings surface.
+  - path: apps/desktop/src/app/settings/constants.ts
+    classification: optional_ui
+    destination: reference/apps/desktop/src/app/settings/constants.ts
+    reason: Desktop provider presentation overlays and constants.
+  - path: apps/desktop/src/hermes.ts
+    classification: optional_ui
+    destination: reference/apps/desktop/src/hermes.ts
+    reason: Desktop bridge to Hermes backend contracts.
+  - path: apps/desktop/src/types/hermes.ts
+    classification: optional_ui
+    destination: reference/apps/desktop/src/types/hermes.ts
+    reason: Desktop TypeScript contracts for Hermes responses.
+  - path: apps/desktop/src/app/messaging/index.tsx
+    classification: optional_ui
+    destination: reference/apps/desktop/src/app/messaging/index.tsx
+    reason: Desktop messaging platform configuration surface.
+  - path: apps/desktop/src/app/messaging/platform-icon.tsx
+    classification: optional_ui
+    destination: reference/apps/desktop/src/app/messaging/platform-icon.tsx
+    reason: Desktop platform icon presentation derived from channel metadata.
+  - path: web/src/components/OAuthProvidersCard.tsx
+    classification: optional_ui
+    destination: reference/web/src/components/OAuthProvidersCard.tsx
+    reason: Web dashboard OAuth provider account cards.
+  - path: web/src/components/OAuthLoginModal.tsx
+    classification: optional_ui
+    destination: reference/web/src/components/OAuthLoginModal.tsx
+    reason: Web dashboard provider authentication modal.
+  - path: web/src/pages/EnvPage.tsx
+    classification: optional_ui
+    destination: reference/web/src/pages/EnvPage.tsx
+    reason: Web dashboard API-key and environment provider settings.
+  - path: web/src/lib/api.ts
+    classification: optional_ui
+    destination: reference/web/src/lib/api.ts
+    reason: Web dashboard API client contracts for provider configuration.
+
+test_rules:
+  - path: tests/gateway
+    kind: root
+    behavior: Gateway, channel adapter, delivery, authorization, session, relay, and plugin behavior.
+  - path: tests/providers
+    kind: root
+    behavior: Provider profile registration, aliases, and lazy discovery.
+  - path: tests/plugins/model_providers
+    kind: root
+    behavior: Bundled model-provider plugin profile behavior.
+  - path: tests/agent/transports
+    kind: root
+    behavior: Provider protocol transport requests, responses, tools, and usage normalization.
+  - path: tests/hermes_cli/test_provider_*.py
+    kind: glob
+    behavior: Provider catalog, setup, metadata, grouping, and parity contracts.
+  - path: tests/hermes_cli/test_*_provider.py
+    kind: glob
+    behavior: Provider runtime and integration behavior using provider-suffixed test modules.
+  - path: tests/hermes_cli/test_api_key_providers.py
+    kind: file
+    behavior: API-key provider setup and credential behavior.
+  - path: tests/hermes_cli/test_provider_parity.py
+    kind: file
+    behavior: Canonical provider parity across CLI and desktop provider surfaces.
+  - path: tests/hermes_cli/test_provider_groups.py
+    kind: file
+    behavior: Provider presentation group behavior without redefining membership.
+  - path: tests/hermes_cli/test_inventory.py
+    kind: file
+    behavior: Shared provider and model inventory payload.
+  - path: tests/hermes_cli/test_models*.py
+    kind: glob
+    behavior: Canonical and discovered model catalog behavior.
+  - path: tests/hermes_cli/test_model_*.py
+    kind: glob
+    behavior: Model selection and provider setup workflows.
+  - path: tests/hermes_cli/test_auth*.py
+    kind: glob
+    behavior: Provider authentication stores, flows, refresh, and logout behavior.
+  - path: tests/hermes_cli/test_runtime_provider*.py
+    kind: glob
+    behavior: Runtime provider endpoint, API mode, credential, and pool resolution.
+  - path: tests/hermes_cli/test_azure_detect.py
+    kind: file
+    behavior: Azure endpoint and API-mode detection.
+  - path: tests/agent/test_auxiliary_client.py
+    kind: file
+    behavior: Auxiliary client provider runtime integration.
+  - path: tests/agent/test_*credential*.py
+    kind: glob
+    behavior: Credential pooling, rotation, attribution, and persistence behavior.
+  - path: tests/agent/test_secret_scope*.py
+    kind: glob
+    behavior: Profile and workstream secret scoping.
+  - path: tests/agent/test_*transport*.py
+    kind: glob
+    behavior: Runtime transport selection outside the transport test root.
+  - path: apps/desktop/e2e/onboarding.spec.ts
+    kind: file
+    behavior: Desktop first-run onboarding workflow.
+  - path: apps/desktop/src/store/onboarding.test.ts
+    kind: file
+    behavior: Desktop onboarding state transitions and persistence.
+  - path: apps/desktop/src/components/onboarding/index.test.tsx
+    kind: file
+    behavior: Desktop onboarding component behavior.
+  - path: apps/desktop/src/app/settings/providers-settings.test.tsx
+    kind: file
+    behavior: Desktop provider settings membership and interaction behavior.
+  - path: apps/desktop/src/app/messaging/*.test.tsx
+    kind: glob
+    behavior: Desktop messaging platform configuration and presentation behavior.
+
+internal_module_roots:
+  - agent
+  - cron
+  - gateway
+  - hermes_cli
+  - plugins
+  - providers
+  - tools
+  - acp_adapter
+  - tui_gateway
+  - cli
+  - hermes_constants
+  - hermes_logging
+  - hermes_state
+  - model_tools
+  - run_agent
+  - toolsets
+  - utils
