@@ -89,3 +89,22 @@ class FrontendMap:
     websocket_paths: tuple[str, ...]
     electron_bridge_references: tuple[str, ...]
     static_catalog_references: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class DependencyMap:
+    python_core: tuple[str, ...]
+    python_extras: dict[str, tuple[str, ...]]
+    javascript_packages: dict[str, tuple[str, ...]]
+    tests_by_area: dict[str, tuple[str, ...]]
+
+
+@dataclass(frozen=True, slots=True)
+class InventoryReport:
+    schema_version: int
+    source: SourceState
+    plugins: tuple[PluginRecord, ...]
+    python_graph: PythonGraph
+    registries: RegistrySnapshot
+    frontend: FrontendMap
+    dependencies: DependencyMap
