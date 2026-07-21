@@ -62,6 +62,53 @@ def test_scan_python_graph_reports_missing_local_module(tmp_path: Path) -> None:
     assert graph.unresolved_local_imports == ("gateway/run.py:gateway.missing",)
 
 
+def test_scan_python_graph_reports_importerror_guarded_local_import_as_optional(
+    tmp_path: Path,
+) -> None:
+    agent = tmp_path / "agent"
+    tui = tmp_path / "tui_gateway"
+    agent.mkdir()
+    tui.mkdir()
+    (agent / "__init__.py").write_text("", encoding="utf-8")
+    (tui / "__init__.py").write_text("", encoding="utf-8")
+    (tui / "render.py").write_text(
+        "try:\n"
+        "    from agent.rich_output import format_response\n"
+        "except ImportError:\n"
+        "    format_response = None\n",
+        encoding="utf-8",
+    )
+
+    graph = scan_python_graph(tmp_path, [Path("agent"), Path("tui_gateway")])
+
+    assert graph.unresolved_local_imports == ()
+    assert graph.optional_local_imports == (
+        "tui_gateway/render.py:agent.rich_output",
+    )
+
+
+def test_scan_python_graph_keeps_non_importerror_guarded_import_blocking(
+    tmp_path: Path,
+) -> None:
+    agent = tmp_path / "agent"
+    agent.mkdir()
+    (agent / "__init__.py").write_text("", encoding="utf-8")
+    (agent / "consumer.py").write_text(
+        "try:\n"
+        "    from agent.missing import value\n"
+        "except ValueError:\n"
+        "    value = None\n",
+        encoding="utf-8",
+    )
+
+    graph = scan_python_graph(tmp_path, [Path("agent")])
+
+    assert graph.unresolved_local_imports == (
+        "agent/consumer.py:agent.missing",
+    )
+    assert graph.optional_local_imports == ()
+
+
 def test_scan_python_graph_wraps_syntax_errors(tmp_path: Path) -> None:
     path = tmp_path / "gateway.py"
     path.write_text("def broken(:\n", encoding="utf-8")
