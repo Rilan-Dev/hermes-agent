@@ -1,0 +1,8 @@
+name: telegram-platform
+label: Telegram
+kind: platform
+version: 1.0.0
+requires_env:
+  - name: TELEGRAM_BOT_TOKEN
+optional_env:
+  - name: TELEGRAM_ALLOWED_USERS
