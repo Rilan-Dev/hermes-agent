@@ -65,6 +65,7 @@ class PythonGraph:
     imports: tuple[ImportEdge, ...]
     dynamic_imports: tuple[str, ...]
     unresolved_local_imports: tuple[str, ...]
+    optional_local_imports: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
