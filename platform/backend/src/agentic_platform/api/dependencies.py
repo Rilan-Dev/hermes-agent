@@ -14,10 +14,11 @@ def application_dependencies(request: Request):
     return request.app.state.dependencies
 
 
-def principal_from_headers(
-    user_id: Annotated[str, Header(alias="X-User-ID")],
-    header_workspace_id: Annotated[str, Header(alias="X-Workspace-ID")],
-    role: Annotated[str, Header(alias="X-Workspace-Role")],
+def principal_from_values(
+    *,
+    user_id: str,
+    workspace_id: str,
+    role: str,
 ) -> Principal:
     try:
         membership_role = MembershipRole(role)
@@ -25,6 +26,18 @@ def principal_from_headers(
         raise DomainValidationError("workspace role is invalid") from exc
     return Principal(
         user_id=UserId.parse(user_id),
-        workspace_id=WorkspaceId.parse(header_workspace_id),
+        workspace_id=WorkspaceId.parse(workspace_id),
         role=membership_role,
+    )
+
+
+def principal_from_headers(
+    user_id: Annotated[str, Header(alias="X-User-ID")],
+    header_workspace_id: Annotated[str, Header(alias="X-Workspace-ID")],
+    role: Annotated[str, Header(alias="X-Workspace-Role")],
+) -> Principal:
+    return principal_from_values(
+        user_id=user_id,
+        workspace_id=header_workspace_id,
+        role=role,
     )
