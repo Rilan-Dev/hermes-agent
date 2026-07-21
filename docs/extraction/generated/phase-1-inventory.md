@@ -2,8 +2,8 @@
 
 - Source repository: `Rilan-Dev/hermes-agent`
 - Source SHA: `18bb6f1aeaa334badee6271fc3337f39ca6bfcfb`
-- Inventory HEAD: `9de6d424828b0a2ffaec02da528e609881054949`
-- Scoped files: **322**
+- Inventory HEAD: `f4d2b2b9f437d041c0305c5d1529fb0267a888c2`
+- Scoped files: **285**
 - Out-of-scope internal dependencies: **771**
 - Unresolved internal imports: **0**
 
@@ -11,7 +11,7 @@
 
 | Classification | Files |
 |---|---|
-| core | 281 |
+| core | 244 |
 | host_port | 16 |
 | optional_ui | 25 |
 
