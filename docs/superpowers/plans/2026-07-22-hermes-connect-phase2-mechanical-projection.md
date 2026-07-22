@@ -2,64 +2,75 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Deterministically project the approved Hermes channel, provider, onboarding, compatibility, reference, and selected upstream-test files into `extracted/hermes-connect-kit/` with exact provenance and no behavior refactor.
+**Goal:** Reproduce the reviewed Hermes channel, provider, onboarding, host-boundary, optional-reference, and selected-test source as one byte-identical source-relative tree under `extracted/hermes-connect-kit/upstream/`, with deterministic provenance and no behavior refactor.
 
-**Architecture:** Strengthen the Phase 1 manifest and inventory with subsystem and Git-object provenance, then generate all synchronized files from that inventory through a staging-and-swap projection engine. Projection is committed in three reviewable slices—shared/providers, channels, onboarding/reference/host ports—while the public `hermes_connect` service facade remains out of scope until Phase 3.
+**Architecture:** Refresh Phase 1 evidence at the approved combined baseline, upgrade the manifest to version 2, enrich inventory with Git-object provenance, then stage and verify one complete projection tree before a rollback-safe directory swap. Classification, subsystem ownership, and planned Phase 3 layers remain metadata; they never create separate Python import roots.
 
-**Tech Stack:** Python 3.11, dataclasses, pathlib, subprocess/Git plumbing, PyYAML, pytest, Ruff, existing Hermes plugin/registry probes, GitHub Actions and `scripts/run_tests.sh`.
+**Tech Stack:** Python 3.11, dataclasses, pathlib, subprocess/Git plumbing, PyYAML, pytest, Ruff, existing Hermes registry probes, and the repository’s canonical isolated test runner. No new or expanded GitHub Actions workflow is part of this plan.
 
 ## Global Constraints
 
 - Combined source baseline: `269eb7b30e0bc3666c377e0325263e7b5bcf49b4`.
 - Upstream source baseline: `NousResearch/hermes-agent@7de554277de632364c74fcf8641daa58a9a977d9`.
-- Fork `main` baseline: `Rilan-Dev/hermes-agent@d5a67ad32522273115d887560ca1c08a02bc7873`.
-- Never modify, reset, prune, or merge extraction work into fork `main`.
-- Create a real local worktree before executing source projection.
-- Generated ownership is limited to `vendor/`, `compatibility/`, `reference/`, `tests/upstream/`, and `projection-manifest.json` under `extracted/hermes-connect-kit/`.
-- Projection must not rewrite imports or change projected source bytes in Phase 2.
-- Platform and model-provider membership remains registry/plugin driven; do not add duplicate membership lists.
-- OpenAI API-key, OpenAI Codex OAuth, native runtime, model-catalog, and OpenAI-compatible identities remain distinct.
+- Fork `main`: `Rilan-Dev/hermes-agent@d5a67ad32522273115d887560ca1c08a02bc7873` and must remain unchanged.
+- Canonical design: `docs/superpowers/specs/2026-07-22-hermes-connect-phase2-projection-design.md`.
+- Detailed companion design: `docs/extraction/07-phase-2-mechanical-projection-design.md`.
+- Generated ownership is limited to `extracted/hermes-connect-kit/upstream/` and `extracted/hermes-connect-kit/projection-lock.json`.
+- Every projected path is `upstream/<original repository-relative path>`.
+- Classification and subsystem values are metadata only.
+- Phase 2 performs no import rewriting, package renaming, compatibility wrapping, provider-ID normalization, or public-service implementation.
+- Platform and model-provider membership remains registry/plugin driven.
+- OpenAI API-key, OpenAI Codex OAuth/runtime, native model identifiers, and OpenAI-compatible endpoints remain distinct.
 - Every implementation task follows RED → GREEN → focused regression → commit.
-- Every slice ends with a written self-review covering unexpected files, deletions, destination changes, host-port growth, and test gaps.
+- Every gate ends with a written self-review.
+- Stop rather than claim success when a required local command cannot be executed.
 
 ---
 
-## Required Worktree Setup
+## Required Local Worktree Setup
 
-Run before Task 1 in a development checkout:
+The remote work branch already exists. In a connected development checkout, run:
 
 ```bash
 git fetch origin
+git show-ref --verify --quiet \
+  refs/heads/worktree/channels-providers-phase2-2026-07-22 \
+  || git branch --track \
+    worktree/channels-providers-phase2-2026-07-22 \
+    origin/worktree/channels-providers-phase2-2026-07-22
+
 git worktree add \
   .worktrees/channels-providers-phase2-2026-07-22 \
-  -b worktree/channels-providers-phase2-2026-07-22 \
-  origin/planning/channels-providers-phase2-2026-07-22
+  worktree/channels-providers-phase2-2026-07-22
+
 cd .worktrees/channels-providers-phase2-2026-07-22
 git status --short
-git rev-parse HEAD
+git merge-base --is-ancestor \
+  269eb7b30e0bc3666c377e0325263e7b5bcf49b4 HEAD
 ```
 
 Expected:
 
-```text
-# git status --short prints nothing
-# git rev-parse HEAD includes the planning docs and descends from
-# 269eb7b30e0bc3666c377e0325263e7b5bcf49b4
-```
+- `git status --short` prints nothing.
+- `git merge-base --is-ancestor` exits 0.
 
-Do not continue from a dirty worktree.
+Do not execute projection from a dirty checkout.
 
-## File Structure Produced by This Plan
+## Files Created or Modified
 
 ```text
 scripts/extraction/
-├── schema.py                   # Manifest and projection enums/dataclasses
-├── manifest.py                 # Strict manifest-v2 parser
-├── git_tree.py                 # Batched Git tree/blob provenance lookup
-├── filesystem_inventory.py     # Source records with Git/content provenance
-├── test_inventory.py           # Deterministic selected-test expansion
-├── projection.py               # Plan, stage, verify, and apply engine
-└── project_sources.py          # CLI for --write and --check
+├── schema.py
+├── manifest.py
+├── git_tree.py
+├── filesystem_inventory.py
+├── test_inventory.py
+├── build_inventory.py
+├── projection.py
+├── project_sources.py
+├── verify_projection.py
+├── report_upstream_drift.py
+└── run_projected_tests.py
 
 tests/extraction/
 ├── test_manifest.py
@@ -68,25 +79,29 @@ tests/extraction/
 ├── test_projection_plan.py
 ├── test_projection_apply.py
 ├── test_project_sources_cli.py
+├── test_verify_projection.py
+├── test_upstream_drift.py
 └── snapshots/registry-snapshot.json
 
 extracted/hermes-connect-kit/
-├── README.md                   # Hand-written package boundary documentation
-├── pyproject.toml              # Hand-written Phase 2 test package metadata
-├── extraction-manifest.yaml    # Manifest v2 and subsystem ownership
-├── projection-manifest.json    # Generated exact provenance
-├── src/hermes_connect/__init__.py
-├── vendor/                     # Generated core source
-├── compatibility/              # Generated host-port source
-├── reference/                  # Generated optional UI/reference source
-└── tests/
-    ├── conftest.py             # Projected import-path harness
-    └── upstream/               # Generated unchanged selected upstream tests
+├── README.md                         # Hand-written
+├── extraction-manifest.yaml          # Hand-written manifest v2
+├── projection-lock.json              # Generated
+└── upstream/                          # Generated exact source tree
+
+docs/extraction/
+├── generated/phase-1-inventory.yaml
+├── generated/phase-1-inventory.md
+├── generated/phase-1-test-matrix.md
+├── 08-phase-2-upstream-impact-review.md
+├── 09-phase-2-projection-review.md
+├── 10-phase-2-test-evidence.md
+└── PHASE_2_REVIEW_GATE.md
 ```
 
 ---
 
-### Task 1: Refresh Phase 1 Evidence on the Phase 2 Baseline
+### Task 1: Refresh Evidence at the Approved Phase 2 Baseline
 
 **Files:**
 - Modify: `extracted/hermes-connect-kit/extraction-manifest.yaml`
@@ -95,13 +110,13 @@ extracted/hermes-connect-kit/
 - Regenerate: `docs/extraction/generated/phase-1-inventory.yaml`
 - Regenerate: `docs/extraction/generated/phase-1-inventory.md`
 - Regenerate: `docs/extraction/generated/phase-1-test-matrix.md`
-- Create: `docs/extraction/07-phase-2-upstream-impact-review.md`
+- Create: `docs/extraction/08-phase-2-upstream-impact-review.md`
 
 **Interfaces:**
-- Consumes: existing `load_manifest()`, registry probe, and inventory builder.
-- Produces: a current, deterministic evidence set whose `source_sha` is `269eb7b30e0bc3666c377e0325263e7b5bcf49b4`.
+- Consumes: current manifest v1, `registry_probe`, and `build_inventory`.
+- Produces: refreshed evidence whose `source_sha` is `269eb7b30e0bc3666c377e0325263e7b5bcf49b4`.
 
-- [ ] **Step 1: Write the failing baseline assertion**
+- [ ] **Step 1: Write the failing source-baseline test**
 
 Add to `tests/extraction/test_manifest.py`:
 
@@ -114,7 +129,7 @@ from scripts.extraction.manifest import load_manifest
 PHASE2_SOURCE_SHA = "269eb7b30e0bc3666c377e0325263e7b5bcf49b4"
 
 
-def test_manifest_uses_phase2_combined_baseline() -> None:
+def test_manifest_uses_phase2_source_baseline() -> None:
     manifest = load_manifest(
         Path("extracted/hermes-connect-kit/extraction-manifest.yaml")
     )
@@ -124,26 +139,28 @@ def test_manifest_uses_phase2_combined_baseline() -> None:
 - [ ] **Step 2: Run the focused test and verify RED**
 
 ```bash
-uv run pytest tests/extraction/test_manifest.py::test_manifest_uses_phase2_combined_baseline -v
+uv run pytest \
+  tests/extraction/test_manifest.py::test_manifest_uses_phase2_source_baseline \
+  -v
 ```
 
-Expected: FAIL showing the older `18bb6f1...` SHA.
+Expected: FAIL showing the older `18bb6f1...` value.
 
-- [ ] **Step 3: Update only the source SHA**
+- [ ] **Step 3: Update only the v1 source SHA**
 
-Change:
+Set:
 
 ```yaml
 source_sha: 269eb7b30e0bc3666c377e0325263e7b5bcf49b4
 ```
 
-Do not change classifications in this step.
+Do not change classifications or projection fields yet.
 
-- [ ] **Step 4: Capture the isolated registry snapshot**
+- [ ] **Step 4: Capture the registry snapshot in an isolated home**
 
 ```bash
 rm -rf .tmp/hermes-phase2-home
-mkdir -p tests/extraction/snapshots
+mkdir -p .tmp/hermes-phase2-home tests/extraction/snapshots
 HERMES_HOME="$PWD/.tmp/hermes-phase2-home" \
 HERMES_ENABLE_PROJECT_PLUGINS=0 \
 HERMES_SAFE_MODE=0 \
@@ -158,24 +175,32 @@ uv run python -m json.tool \
   tests/extraction/snapshots/registry-snapshot.json >/dev/null
 ```
 
-Expected: exit 0 with valid JSON and no network calls.
+Expected: both commands exit 0.
 
-- [ ] **Step 5: Regenerate deterministic inventory outputs twice**
+- [ ] **Step 5: Regenerate evidence twice and prove determinism**
 
 ```bash
 uv run python -m scripts.extraction.build_inventory
 cp docs/extraction/generated/phase-1-inventory.yaml /tmp/phase2-inventory.yaml
 cp docs/extraction/generated/phase-1-inventory.md /tmp/phase2-inventory.md
 cp docs/extraction/generated/phase-1-test-matrix.md /tmp/phase2-test-matrix.md
+cp tests/extraction/snapshots/registry-snapshot.json /tmp/phase2-registry.json
+
 uv run python -m scripts.extraction.build_inventory
-diff -u /tmp/phase2-inventory.yaml docs/extraction/generated/phase-1-inventory.yaml
-diff -u /tmp/phase2-inventory.md docs/extraction/generated/phase-1-inventory.md
-diff -u /tmp/phase2-test-matrix.md docs/extraction/generated/phase-1-test-matrix.md
+
+diff -u /tmp/phase2-inventory.yaml \
+  docs/extraction/generated/phase-1-inventory.yaml
+diff -u /tmp/phase2-inventory.md \
+  docs/extraction/generated/phase-1-inventory.md
+diff -u /tmp/phase2-test-matrix.md \
+  docs/extraction/generated/phase-1-test-matrix.md
+diff -u /tmp/phase2-registry.json \
+  tests/extraction/snapshots/registry-snapshot.json
 ```
 
-Expected: all diffs empty.
+Expected: all diffs are empty.
 
-- [ ] **Step 6: Verify the refreshed evidence gate**
+- [ ] **Step 6: Verify refreshed characterization**
 
 ```bash
 uv run ruff check scripts/extraction tests/extraction
@@ -191,56 +216,51 @@ scripts/run_tests.sh -j 4 \
 
 Expected: all commands exit 0.
 
-- [ ] **Step 7: Write the upstream impact review**
+- [ ] **Step 7: Write the exact upstream-impact review**
 
-Create `docs/extraction/07-phase-2-upstream-impact-review.md` containing exact refreshed counts and sections for:
+`docs/extraction/08-phase-2-upstream-impact-review.md` must contain actual generated values for:
+
+- source, upstream, and fork-main SHAs;
+- added/removed/changed scoped paths since `18bb6f1...`;
+- changed dynamic roots;
+- new out-of-scope internal dependencies;
+- `windows_ssh_runtime.py`, `_subprocess_compat.py`, route identity, bootstrap, service/process, and hard-exit classifications;
+- registry membership/identity changes;
+- selected-test changes;
+- unresolved internal import count.
+
+The final decision line is exactly:
 
 ```markdown
-# Phase 2 Upstream Impact Review
-
-- Combined baseline: `269eb7...`
-- Upstream baseline: `7de554...`
-- Fork main: `d5a67a...`
-
-## Added scoped files
-## Removed scoped files
-## Changed classifications
-## New out-of-scope dependencies
-## Registry identity changes
-## Test-matrix changes
-## Decision
-
-Phase 2 projection may proceed only when unresolved internal imports are zero.
+Projection is permitted only when unresolved in-scope internal imports equal zero.
 ```
-
-Replace each section with actual generated evidence; do not leave headings empty.
 
 - [ ] **Step 8: Self-review and commit**
 
 ```bash
-git diff --name-status
 git diff --check
-git grep -nE 'TBD|TODO|PLACEHOLDER' -- \
-  docs/extraction/07-phase-2-upstream-impact-review.md \
-  docs/extraction/generated \
-  extracted/hermes-connect-kit/extraction-manifest.yaml
-```
+UNEXPECTED="$(git diff --name-only | grep -Ev \
+  '^(docs/extraction/|tests/extraction/|extracted/hermes-connect-kit/extraction-manifest.yaml$)' \
+  || true)"
+test -z "$UNEXPECTED" || {
+  printf 'Unexpected Gate A paths:\n%s\n' "$UNEXPECTED"
+  exit 1
+}
 
-Expected: no placeholders; no production-source paths changed.
-
-```bash
 git add \
   extracted/hermes-connect-kit/extraction-manifest.yaml \
   tests/extraction/test_manifest.py \
   tests/extraction/snapshots/registry-snapshot.json \
   docs/extraction/generated \
-  docs/extraction/07-phase-2-upstream-impact-review.md
-git commit -m "chore(extraction): refresh Phase 2 source evidence"
+  docs/extraction/08-phase-2-upstream-impact-review.md
+git commit -m "chore(extraction): refresh Phase 2 evidence"
 ```
+
+**Checkpoint A:** Stop for evidence review before schema or projector work.
 
 ---
 
-### Task 2: Upgrade the Manifest to Version 2 with Subsystem Ownership
+### Task 2: Introduce Manifest Version 2 Without Import-Root Destinations
 
 **Files:**
 - Modify: `scripts/extraction/schema.py`
@@ -249,55 +269,18 @@ git commit -m "chore(extraction): refresh Phase 2 source evidence"
 - Modify: `tests/extraction/test_manifest.py`
 
 **Interfaces:**
-- Produces: `Subsystem`, manifest lineage fields, and `subsystem` on `RootRule`, `FileRule`, and `TestRule`.
-- Later tasks consume: `manifest.upstream_sha`, `manifest.fork_main_sha`, and each rule's `subsystem`.
+- Produces: `Subsystem`, `PlannedLayer`, manifest lineage, and `projection_root`.
+- Projected path is derived; rules no longer carry runtime destination paths.
 
-- [ ] **Step 1: Write failing parser tests**
+- [ ] **Step 1: Write failing v2 tests**
 
 Add:
 
 ```python
-from scripts.extraction.schema import Subsystem
+from scripts.extraction.schema import PlannedLayer, Subsystem
 
 
-def test_manifest_v2_records_lineage_and_subsystems(tmp_path: Path) -> None:
-    manifest_path = tmp_path / "manifest.yaml"
-    manifest_path.write_text(
-        """
-version: 2
-source_repository: Rilan-Dev/hermes-agent
-source_sha: 269eb7b30e0bc3666c377e0325263e7b5bcf49b4
-upstream_repository: NousResearch/hermes-agent
-upstream_sha: 7de554277de632364c74fcf8641daa58a9a977d9
-fork_main_sha: d5a67ad32522273115d887560ca1c08a02bc7873
-dynamic_roots:
-  - path: providers
-    subsystem: providers
-    classification: core
-    destination: vendor/providers
-    reason: Provider profiles.
-explicit_files: []
-test_rules:
-  - path: tests/providers
-    kind: root
-    subsystem: providers
-    behavior: Provider registry behavior.
-internal_module_roots: [providers]
-""".strip()
-        + "\n",
-        encoding="utf-8",
-    )
-
-    manifest = load_manifest(manifest_path)
-
-    assert manifest.version == 2
-    assert manifest.upstream_sha.startswith("7de554")
-    assert manifest.fork_main_sha.startswith("d5a67a")
-    assert manifest.dynamic_roots[0].subsystem is Subsystem.PROVIDERS
-    assert manifest.test_rules[0].subsystem is Subsystem.PROVIDERS
-
-
-def test_manifest_v2_rejects_missing_subsystem(tmp_path: Path) -> None:
+def test_manifest_v2_derives_projection_paths(tmp_path: Path) -> None:
     path = tmp_path / "manifest.yaml"
     path.write_text(
         """
@@ -307,34 +290,64 @@ source_sha: 269eb7b30e0bc3666c377e0325263e7b5bcf49b4
 upstream_repository: NousResearch/hermes-agent
 upstream_sha: 7de554277de632364c74fcf8641daa58a9a977d9
 fork_main_sha: d5a67ad32522273115d887560ca1c08a02bc7873
+projection_root: upstream
 dynamic_roots:
   - path: providers
+    subsystem: providers
     classification: core
-    destination: vendor/providers
+    planned_layer: vendor
     reason: Provider profiles.
 explicit_files: []
-test_rules: []
+test_rules:
+  - path: tests/providers
+    kind: root
+    subsystem: providers
+    behavior: Provider behavior.
 internal_module_roots: [providers]
 """.strip()
         + "\n",
         encoding="utf-8",
     )
 
-    with pytest.raises(ManifestError, match="subsystem"):
+    manifest = load_manifest(path)
+
+    assert manifest.version == 2
+    assert manifest.projection_root == "upstream"
+    assert manifest.dynamic_roots[0].subsystem is Subsystem.PROVIDERS
+    assert manifest.dynamic_roots[0].planned_layer is PlannedLayer.VENDOR
+    assert manifest.projected_path("providers/base.py") == (
+        "upstream/providers/base.py"
+    )
+
+
+def test_manifest_v2_rejects_runtime_destination(tmp_path: Path) -> None:
+    path = write_manifest_v2(
+        tmp_path,
+        dynamic_rule={
+            "path": "providers",
+            "subsystem": "providers",
+            "classification": "core",
+            "planned_layer": "vendor",
+            "destination": "vendor/providers",
+            "reason": "Provider profiles.",
+        },
+    )
+
+    with pytest.raises(ManifestError, match="destination"):
         load_manifest(path)
 ```
 
-- [ ] **Step 2: Run tests and verify RED**
+- [ ] **Step 2: Run and verify RED**
 
 ```bash
 uv run pytest tests/extraction/test_manifest.py -q
 ```
 
-Expected: import/attribute failures for `Subsystem` and manifest-v2 fields.
+Expected: missing enums/fields and unsupported version 2.
 
-- [ ] **Step 3: Add the schema types**
+- [ ] **Step 3: Implement schema types**
 
-Implement in `scripts/extraction/schema.py`:
+In `scripts/extraction/schema.py` add:
 
 ```python
 class Subsystem(str, Enum):
@@ -344,12 +357,18 @@ class Subsystem(str, Enum):
     ONBOARDING = "onboarding"
 
 
+class PlannedLayer(str, Enum):
+    VENDOR = "vendor"
+    COMPATIBILITY = "compatibility"
+    REFERENCE = "reference"
+
+
 @dataclass(frozen=True)
 class RootRule:
     path: str
     subsystem: Subsystem
     classification: Classification
-    destination: str
+    planned_layer: PlannedLayer | None
     reason: str
 
 
@@ -358,7 +377,7 @@ class FileRule:
     path: str
     subsystem: Subsystem
     classification: Classification
-    destination: str
+    planned_layer: PlannedLayer | None
     reason: str
 
 
@@ -378,78 +397,62 @@ class ExtractionManifest:
     upstream_repository: str
     upstream_sha: str
     fork_main_sha: str
+    projection_root: str
     dynamic_roots: tuple[RootRule, ...]
     explicit_files: tuple[FileRule, ...]
     test_rules: tuple[TestRule, ...]
     internal_module_roots: tuple[str, ...]
+
+    def projected_path(self, source_path: str) -> str:
+        return PurePosixPath(self.projection_root, source_path).as_posix()
 ```
 
-- [ ] **Step 4: Parse version 2 strictly**
+Import `PurePosixPath` in `schema.py`.
 
-Add `_subsystem()` beside `_classification()` and require version 2:
+- [ ] **Step 4: Parse v2 strictly**
 
-```python
-def _subsystem(value: object, field: str) -> Subsystem:
-    text = _required_text(value, field)
-    try:
-        return Subsystem(text)
-    except ValueError as exc:
-        allowed = ", ".join(item.value for item in Subsystem)
-        raise ManifestError(f"{field} must be one of: {allowed}") from exc
-```
+`manifest.py` must:
 
-Apply it to all rule constructors. Parse and SHA-validate `upstream_sha` and `fork_main_sha` exactly like `source_sha`.
+- require `version == 2`;
+- SHA-validate `source_sha`, `upstream_sha`, and `fork_main_sha`;
+- require `projection_root == "upstream"`;
+- require one subsystem on every source/test rule;
+- accept optional planned layer only on source rules;
+- reject the legacy `destination` key with `ManifestError`;
+- reject unknown keys rather than silently ignoring them.
 
 - [ ] **Step 5: Migrate the real manifest**
 
-Set:
+Set top-level lineage fields and remove every `destination`. Convert each old destination class to `planned_layer` metadata:
 
 ```yaml
 version: 2
+source_repository: Rilan-Dev/hermes-agent
 source_sha: 269eb7b30e0bc3666c377e0325263e7b5bcf49b4
 upstream_repository: NousResearch/hermes-agent
 upstream_sha: 7de554277de632364c74fcf8641daa58a9a977d9
 fork_main_sha: d5a67ad32522273115d887560ca1c08a02bc7873
+projection_root: upstream
 ```
 
-Assign exactly one `subsystem` to every dynamic root, explicit file, and test rule. Use `shared` only for cross-cutting configuration, plugin manager, constants, logging, and common command/runtime glue.
+Assign exactly one subsystem to each source/test rule.
 
-- [ ] **Step 6: Run focused and full extraction tests**
+- [ ] **Step 6: Verify and commit**
 
 ```bash
 uv run pytest tests/extraction/test_manifest.py -q
 uv run pytest tests/extraction -q
 uv run ruff check scripts/extraction tests/extraction
-```
 
-Expected: all pass.
-
-- [ ] **Step 7: Self-review and commit**
-
-```bash
-python - <<'PY'
-from pathlib import Path
-from scripts.extraction.manifest import load_manifest
-m = load_manifest(Path("extracted/hermes-connect-kit/extraction-manifest.yaml"))
-assert all(rule.subsystem for rule in m.dynamic_roots)
-assert all(rule.subsystem for rule in m.explicit_files)
-assert all(rule.subsystem for rule in m.test_rules)
-print({s.value for s in {r.subsystem for r in (*m.dynamic_roots, *m.explicit_files, *m.test_rules)}})
-PY
-```
-
-Expected: all four subsystem names are present.
-
-```bash
 git add scripts/extraction/schema.py scripts/extraction/manifest.py \
   extracted/hermes-connect-kit/extraction-manifest.yaml \
   tests/extraction/test_manifest.py
-git commit -m "feat(extraction): classify manifest rules by subsystem"
+git commit -m "feat(extraction): define source-relative manifest v2"
 ```
 
 ---
 
-### Task 3: Record Git Provenance and Expand Selected Upstream Tests
+### Task 3: Add Git-Object Provenance and Selected-Test Inventory
 
 **Files:**
 - Create: `scripts/extraction/git_tree.py`
@@ -461,63 +464,61 @@ git commit -m "feat(extraction): classify manifest rules by subsystem"
 
 **Interfaces:**
 - Produces `GitTreeEntry`, enriched `FileRecord`, and `TestFileRecord`.
-- `inventory_files(repo_root, manifest)` remains the public source inventory entry point.
-- New: `inventory_test_files(repo_root, manifest) -> tuple[TestFileRecord, ...]`.
+- Every record carries a mechanically derived projected path.
 
-- [ ] **Step 1: Write RED provenance tests**
-
-Create fixture assertions that a regular executable file and symlink retain Git identity:
+- [ ] **Step 1: Write failing regular-file and symlink tests**
 
 ```python
-def test_inventory_records_git_blob_mode_and_subsystem(git_repo: Path) -> None:
+def test_inventory_records_git_provenance(git_repo: Path) -> None:
     source = git_repo / "providers" / "profile.py"
     source.parent.mkdir(parents=True)
     source.write_text("VALUE = 1\n", encoding="utf-8")
     source.chmod(0o755)
     commit_all(git_repo)
 
-    manifest = make_manifest(
+    manifest = make_manifest_v2(
         source_sha=git_head(git_repo),
-        dynamic_roots=(root_rule("providers", "providers", "vendor/providers"),),
+        roots=(root_rule("providers", "providers", "vendor"),),
     )
     record = inventory_files(git_repo, manifest)[0]
 
+    assert record.projected_path == "upstream/providers/profile.py"
     assert record.subsystem == "providers"
+    assert record.planned_layer == "vendor"
     assert record.git_mode == "100755"
+    assert record.git_object_type == "blob"
     assert len(record.git_blob_sha) == 40
     assert record.kind == "file"
     assert record.link_target is None
 ```
 
-Add a symlink test on non-Windows platforms with `pytest.mark.skipif(os.name == "nt", ...)` and assert `git_mode == "120000"`, `kind == "symlink"`, and exact `link_target`.
+Add a non-Windows symlink test asserting `git_mode == "120000"`, exact relative link target, and rejection of absolute or escaping targets.
 
-- [ ] **Step 2: Write RED selected-test expansion tests**
+- [ ] **Step 2: Write failing selected-test expansion tests**
 
 ```python
-def test_inventory_test_files_expands_root_file_and_glob(git_repo: Path) -> None:
+def test_selected_tests_keep_original_projected_paths(git_repo: Path) -> None:
     write(git_repo, "tests/providers/test_a.py", "def test_a(): pass\n")
     write(git_repo, "tests/gateway/test_b.py", "def test_b(): pass\n")
-    write(git_repo, "tests/gateway/helper.txt", "ignored\n")
     commit_all(git_repo)
 
-    manifest = make_manifest(
+    manifest = make_manifest_v2(
         source_sha=git_head(git_repo),
         test_rules=(
             test_rule("tests/providers", "root", "providers"),
             test_rule("tests/gateway/test_b.py", "file", "channels"),
-            test_rule("tests/**/test_*.py", "glob", "shared"),
         ),
     )
 
     records = inventory_test_files(git_repo, manifest)
-    assert [record.source for record in records] == [
-        "tests/gateway/test_b.py",
-        "tests/providers/test_a.py",
+
+    assert [record.projected_path for record in records] == [
+        "upstream/tests/gateway/test_b.py",
+        "upstream/tests/providers/test_a.py",
     ]
-    assert all(record.destination.startswith("tests/upstream/") for record in records)
 ```
 
-- [ ] **Step 3: Run tests and verify RED**
+- [ ] **Step 3: Verify RED**
 
 ```bash
 uv run pytest \
@@ -525,11 +526,9 @@ uv run pytest \
   tests/extraction/test_test_inventory.py -q
 ```
 
-Expected: missing module/field failures.
-
 - [ ] **Step 4: Implement batched Git tree lookup**
 
-Create `scripts/extraction/git_tree.py` with:
+Create:
 
 ```python
 @dataclass(frozen=True)
@@ -540,18 +539,13 @@ class GitTreeEntry:
     object_sha: str
 
 
-class GitTreeError(RuntimeError):
-    pass
-
-
 def load_tree_entries(
     repo_root: Path,
     source_sha: str,
     scoped_paths: Sequence[str],
 ) -> dict[str, GitTreeEntry]:
-    command = ["git", "ls-tree", "-r", "-z", source_sha, "--", *scoped_paths]
     result = subprocess.run(
-        command,
+        ["git", "ls-tree", "-r", "-z", source_sha, "--", *scoped_paths],
         cwd=repo_root,
         check=True,
         capture_output=True,
@@ -560,50 +554,58 @@ def load_tree_entries(
     for raw in result.stdout.split(b"\0"):
         if not raw:
             continue
-        metadata, path_bytes = raw.split(b"\t", 1)
+        metadata, encoded_path = raw.split(b"\t", 1)
         mode, object_type, object_sha = metadata.decode("ascii").split(" ")
-        path = path_bytes.decode("utf-8", "surrogateescape")
+        path = encoded_path.decode("utf-8", "surrogateescape")
         entries[path] = GitTreeEntry(path, mode, object_type, object_sha)
     return entries
 ```
 
-Wrap subprocess and parse failures in `GitTreeError` with the source SHA and affected paths.
+Wrap subprocess/parse errors in a `GitTreeError` that includes the source SHA.
 
-- [ ] **Step 5: Enrich `FileRecord`**
+- [ ] **Step 5: Enrich source and test records**
 
-Add fields:
+Required fields:
 
 ```python
+source: str
+projected_path: str
 subsystem: str
+classification: str
+planned_layer: str | None
+reason: str
+sha256: str
+size_bytes: int
 git_mode: str
+git_object_type: str
 git_blob_sha: str
 kind: str
 link_target: str | None
 ```
 
-Preload Git tree entries once using all dynamic-root and explicit-file paths. For mode `120000`, hash the link target text bytes and do not follow the symlink. For regular files, retain the existing streaming SHA-256 behavior.
+`TestFileRecord` additionally carries `behavior` and uses classification `test`.
 
-- [ ] **Step 6: Implement selected-test inventory**
+- [ ] **Step 6: Verify source SHA against HEAD without requiring equality**
 
-`TestFileRecord` must include the same provenance fields plus `behavior`. Resolve rules deterministically:
+Add a source-guard test proving:
 
-- `file`: one exact file;
-- `root`: recursive `test_*.py` and `*_test.py` files;
-- `glob`: repository-relative `Path.glob()` matches restricted to files;
-- duplicates collapse only when records are identical;
-- conflicting subsystem or behavior ownership raises `InventoryError`.
+- `source_sha` may be an ancestor of `HEAD`;
+- extraction-only commits after `source_sha` are allowed;
+- changing one scoped source after `source_sha` fails;
+- a Git mode or symlink-target change fails.
 
-- [ ] **Step 7: Add test records to generated evidence**
+- [ ] **Step 7: Add selected tests to generated evidence**
 
-In `build_inventory()` add:
+`build_inventory()` returns:
 
 ```python
-test_files = inventory_test_files(repository, manifest)
+"files": [...],
+"selected_test_files": [...],
 ```
 
-Return them under `selected_test_files`, preserving `test_rules` separately.
+Sort records by source path and reject projected-path collisions across source and selected-test records.
 
-- [ ] **Step 8: Run verification and commit**
+- [ ] **Step 8: Verify and commit**
 
 ```bash
 uv run pytest \
@@ -612,618 +614,494 @@ uv run pytest \
   tests/extraction/test_build_inventory.py -q
 uv run pytest tests/extraction -q
 uv run ruff check scripts/extraction tests/extraction
-```
 
-Expected: all pass.
-
-```bash
 git add scripts/extraction/git_tree.py \
   scripts/extraction/filesystem_inventory.py \
   scripts/extraction/test_inventory.py \
   scripts/extraction/build_inventory.py \
   tests/extraction/test_filesystem_inventory.py \
   tests/extraction/test_test_inventory.py
-git commit -m "feat(extraction): record Git provenance and selected tests"
+git commit -m "feat(extraction): record projection provenance"
 ```
+
+**Checkpoint B:** Review manifest-v2 and provenance before projector implementation.
 
 ---
 
-### Task 4: Build the Deterministic Projection Plan
+### Task 4: Build the Complete Projection Plan and Deterministic Lock
 
 **Files:**
 - Create: `scripts/extraction/projection.py`
 - Create: `tests/extraction/test_projection_plan.py`
 
 **Interfaces:**
-- `ProjectionRecord` is the JSON-serializable projection unit.
-- `build_projection_records(inventory, subsystems) -> tuple[ProjectionRecord, ...]`.
-- `merge_projection_records(existing, refreshed, selected_subsystems) -> tuple[ProjectionRecord, ...]`.
+- `build_projection_plan(inventory: Mapping[str, object]) -> ProjectionPlan`.
+- `projection_lock_data(plan: ProjectionPlan, manifest_sha256: str) -> dict[str, object]`.
 - No filesystem writes occur in this task.
 
-- [ ] **Step 1: Write RED planning tests**
+- [ ] **Step 1: Write failing plan tests**
 
 ```python
-def test_build_projection_records_filters_subsystems_and_sorts() -> None:
+def test_projection_plan_uses_one_source_relative_tree() -> None:
     inventory = inventory_fixture(
-        files=[
-            file_row("providers/a.py", "vendor/providers/a.py", "providers"),
-            file_row("gateway/a.py", "vendor/gateway/a.py", "channels"),
-        ],
-        tests=[
-            test_row("tests/providers/test_a.py", "providers"),
-        ],
+        files=[file_row("gateway/session.py", "channels", "core")],
+        tests=[test_row("tests/gateway/test_session.py", "channels")],
     )
 
-    records = build_projection_records(inventory, {"providers"})
+    plan = build_projection_plan(inventory)
 
-    assert [record.destination for record in records] == [
-        "tests/upstream/tests/providers/test_a.py",
-        "vendor/providers/a.py",
+    assert [record.projected_path for record in plan.records] == [
+        "upstream/gateway/session.py",
+        "upstream/tests/gateway/test_session.py",
     ]
 
 
-def test_projection_plan_rejects_destination_collision() -> None:
+def test_projection_plan_rejects_projected_path_collision() -> None:
     inventory = inventory_fixture(
-        files=[
-            file_row("a.py", "vendor/shared.py", "shared"),
-            file_row("b.py", "vendor/shared.py", "providers"),
-        ]
+        files=[file_row("a.py", "shared", "core")],
+        tests=[test_row("a.py", "shared")],
     )
-    with pytest.raises(ProjectionError, match="destination collision"):
-        build_projection_records(inventory, {"shared", "providers"})
+
+    with pytest.raises(ProjectionError, match="collision"):
+        build_projection_plan(inventory)
 ```
 
-- [ ] **Step 2: Run and verify RED**
+- [ ] **Step 2: Verify RED**
 
 ```bash
 uv run pytest tests/extraction/test_projection_plan.py -q
 ```
 
-Expected: module not found.
-
-- [ ] **Step 3: Implement immutable projection records**
+- [ ] **Step 3: Implement immutable records and plan**
 
 ```python
-GENERATED_ROOTS = (
-    "vendor",
-    "compatibility",
-    "reference",
-    "tests/upstream",
-)
-
-
 @dataclass(frozen=True)
 class ProjectionRecord:
     source: str
-    destination: str
+    projected_path: str
     subsystem: str
     classification: str
-    git_mode: str
-    git_blob_sha: str
+    planned_layer: str | None
+    reason: str
     sha256: str
     size_bytes: int
+    git_mode: str
+    git_object_type: str
+    git_blob_sha: str
     kind: str
     link_target: str | None
     behavior: str | None = None
+
+
+@dataclass(frozen=True)
+class ProjectionPlan:
+    source_repository: str
+    source_sha: str
+    upstream_repository: str
+    upstream_sha: str
+    fork_main_sha: str
+    projection_root: str
+    records: tuple[ProjectionRecord, ...]
 ```
 
-Validate every destination is repository-relative and begins with one generated root. Sort by destination, then source.
+Require every projected path to start with `upstream/` and to equal `PurePosixPath("upstream", source)`.
 
-- [ ] **Step 4: Implement cumulative slice merging**
+- [ ] **Step 4: Serialize the deterministic lock**
 
-`merge_projection_records()` must remove existing records owned by selected subsystems, add refreshed selected records, reject collisions, and leave unselected records untouched. Reject an existing record whose subsystem is unknown.
-
-- [ ] **Step 5: Serialize deterministically**
-
-Add:
+The lock contains:
 
 ```python
-def projection_manifest_data(
-    *,
-    source_repository: str,
-    source_sha: str,
-    upstream_repository: str,
-    upstream_sha: str,
-    fork_main_sha: str,
-    records: Sequence[ProjectionRecord],
-) -> dict[str, object]:
-    return {
-        "schema_version": 1,
-        "source_repository": source_repository,
-        "source_sha": source_sha,
-        "upstream_repository": upstream_repository,
-        "upstream_sha": upstream_sha,
-        "fork_main_sha": fork_main_sha,
-        "records": [asdict(record) for record in records],
-    }
+{
+    "schema_version": 1,
+    "generator_version": 1,
+    "source_repository": plan.source_repository,
+    "source_sha": plan.source_sha,
+    "upstream_repository": plan.upstream_repository,
+    "upstream_sha": plan.upstream_sha,
+    "fork_main_sha": plan.fork_main_sha,
+    "projection_root": plan.projection_root,
+    "manifest_sha256": manifest_sha256,
+    "records": [asdict(record) for record in plan.records],
+}
 ```
 
-No timestamp is allowed.
+Sort records by `(projected_path, source)`. Do not add timestamps.
 
-- [ ] **Step 6: Verify and commit**
+- [ ] **Step 5: Verify and commit**
 
 ```bash
 uv run pytest tests/extraction/test_projection_plan.py -q
-uv run ruff check scripts/extraction/projection.py tests/extraction/test_projection_plan.py
-```
+uv run ruff check scripts/extraction/projection.py \
+  tests/extraction/test_projection_plan.py
 
-Expected: all pass.
-
-```bash
-git add scripts/extraction/projection.py tests/extraction/test_projection_plan.py
-git commit -m "feat(extraction): build deterministic projection plans"
+git add scripts/extraction/projection.py \
+  tests/extraction/test_projection_plan.py
+git commit -m "feat(extraction): build deterministic projection plan"
 ```
 
 ---
 
-### Task 5: Implement Staging, Atomic Apply, and Drift Checking
+### Task 5: Implement Staging, Verification, and Rollback-Safe Swap
 
 **Files:**
 - Modify: `scripts/extraction/projection.py`
 - Create: `scripts/extraction/project_sources.py`
+- Create: `scripts/extraction/verify_projection.py`
 - Create: `tests/extraction/test_projection_apply.py`
 - Create: `tests/extraction/test_project_sources_cli.py`
+- Create: `tests/extraction/test_verify_projection.py`
 
 **Interfaces:**
-- `stage_projection(repo_root, kit_root, manifest_data, records) -> Path`.
-- `verify_staged_projection(staging_root, records) -> None`.
-- `apply_staged_projection(staging_root, kit_root) -> None`.
-- `check_projection(kit_root, manifest_data) -> None`.
-- CLI supports `--subsystem`, `--write`, and `--check`.
+- `stage_projection(repo_root, kit_root, plan, lock_data) -> Path`.
+- `verify_tree(tree_root, plan) -> None`.
+- `apply_projection(staging_root, kit_root) -> None`.
+- CLI: `--write`, `--check`, `--dry-run`, and `--debug`.
 
-- [ ] **Step 1: Write RED no-partial-write tests**
+- [ ] **Step 1: Write failing safety tests**
+
+Cover:
 
 ```python
-def test_failed_stage_leaves_existing_projection_unchanged(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    kit = repo / "extracted/hermes-connect-kit"
-    existing = kit / "vendor/providers/existing.py"
+def test_failed_stage_preserves_existing_upstream_tree(tmp_path: Path) -> None:
+    kit = tmp_path / "extracted/hermes-connect-kit"
+    existing = kit / "upstream/gateway/existing.py"
     existing.parent.mkdir(parents=True)
     existing.write_text("old\n", encoding="utf-8")
 
-    records = (record_for_missing_source(),)
-
     with pytest.raises(ProjectionError):
-        stage_projection(repo, kit, lineage(), records)
+        stage_projection(tmp_path, kit, plan_with_missing_source(), lock_data())
 
     assert existing.read_text(encoding="utf-8") == "old\n"
+
+
+def test_projector_preserves_handwritten_files(tmp_path: Path) -> None:
+    kit = tmp_path / "extracted/hermes-connect-kit"
+    readme = kit / "README.md"
+    readme.parent.mkdir(parents=True)
+    readme.write_text("hand written\n", encoding="utf-8")
+
+    apply_valid_projection(tmp_path, kit)
+
+    assert readme.read_text(encoding="utf-8") == "hand written\n"
 ```
 
-Add tests for regular executable mode, symlink target, extra generated file detection, changed hash detection, and preservation of hand-written `README.md`.
+Also test exact bytes, executable mode, safe symlink recreation, escaping-symlink rejection, extra-file detection, changed-hash detection, and rollback when the second rename fails.
 
-- [ ] **Step 2: Run and verify RED**
+- [ ] **Step 2: Verify RED**
 
 ```bash
 uv run pytest \
   tests/extraction/test_projection_apply.py \
-  tests/extraction/test_project_sources_cli.py -q
+  tests/extraction/test_project_sources_cli.py \
+  tests/extraction/test_verify_projection.py -q
 ```
 
-Expected: missing functions/CLI failures.
+- [ ] **Step 3: Stage the complete tree**
 
-- [ ] **Step 3: Stage generated content**
-
-Use `tempfile.mkdtemp(prefix="hermes-connect-projection-", dir=kit_root.parent)`. For each regular file, copy bytes from the verified repository path and apply executable bits derived from `git_mode`. For a symlink, call `os.symlink(record.link_target, destination)`.
-
-Write `projection-manifest.json` with:
+Use a sibling temporary directory:
 
 ```python
-json.dumps(data, indent=2, sort_keys=True) + "\n"
+staging = Path(
+    tempfile.mkdtemp(
+        prefix="hermes-connect-upstream-",
+        dir=kit_root.parent,
+    )
+)
 ```
 
-- [ ] **Step 4: Verify staged content before apply**
+Create `staging/upstream/<source>` for every record. Copy regular-file bytes without text decoding. Derive executable permission from Git mode. Recreate only safe relative symlinks.
 
-Walk only generated roots. Compare exact destination set, kind, link target, mode, size, and SHA-256. Report all differences in one `ProjectionError` message sorted by destination.
+- [ ] **Step 4: Verify staged content before swap**
 
-- [ ] **Step 5: Apply generated roots without touching hand-written paths**
+`verify_tree()` reports all sorted differences in one error:
 
-For each generated root:
-
-1. move the current root to `<name>.projection-backup`;
-2. move the staged root into place;
-3. after all roots succeed, delete backups;
-4. on failure, restore all moved backups and raise `ProjectionError`.
-
-Replace `projection-manifest.json` only after generated roots succeed.
-
-- [ ] **Step 6: Implement `--check`**
-
-`check_projection()` loads the committed projection manifest and reports:
-
-- missing files;
-- extra files;
-- hash changes;
+- missing paths;
+- extra paths;
+- byte/hash changes;
 - mode changes;
-- symlink changes;
-- lineage mismatch with the current extraction manifest.
+- object-kind changes;
+- symlink-target changes.
 
-- [ ] **Step 7: Implement the CLI**
+- [ ] **Step 5: Implement rollback-safe replacement**
+
+Use these sibling paths:
 
 ```text
-uv run python -m scripts.extraction.project_sources \
-  --inventory docs/extraction/generated/phase-1-inventory.yaml \
-  --manifest extracted/hermes-connect-kit/extraction-manifest.yaml \
-  --kit-root extracted/hermes-connect-kit \
-  --subsystem shared \
-  --subsystem providers \
-  --write
+upstream/
+upstream.projection-backup/
+upstream.projection-staging/
 ```
 
-Rules:
+Algorithm:
 
-- exactly one of `--write` or `--check` is required;
-- `--subsystem` may repeat;
-- omitted subsystems with `--write` preserve existing projection records;
-- omitted subsystems with `--check` check every committed record;
-- unknown subsystem exits 2 through argparse;
-- failures exit 1 with no traceback unless `--debug` is supplied.
+1. verify staging;
+2. remove a stale backup only when it is recorded as a prior interrupted backup;
+3. rename current `upstream/` to backup;
+4. rename staged `upstream/` into place;
+5. write `projection-lock.json.tmp`, fsync it, then `os.replace()` it;
+6. verify the installed tree;
+7. remove backup;
+8. on failure, restore backup and report retained staging path.
 
-- [ ] **Step 8: Verify and commit**
+Describe this as rollback-safe, not universally atomic.
+
+- [ ] **Step 6: Implement CLI behavior**
+
+Commands:
+
+```bash
+uv run python -m scripts.extraction.project_sources --dry-run
+uv run python -m scripts.extraction.project_sources --write
+uv run python -m scripts.extraction.project_sources --check
+```
+
+Exactly one mode is required. `--check` performs no writes. Normal failures print one concise error and exit 1; `--debug` re-raises.
+
+- [ ] **Step 7: Verify and commit**
 
 ```bash
 uv run pytest \
   tests/extraction/test_projection_plan.py \
   tests/extraction/test_projection_apply.py \
-  tests/extraction/test_project_sources_cli.py -q
+  tests/extraction/test_project_sources_cli.py \
+  tests/extraction/test_verify_projection.py -q
+uv run pytest tests/extraction -q
 uv run ruff check scripts/extraction tests/extraction
-```
 
-Expected: all pass.
-
-```bash
 git add scripts/extraction/projection.py \
   scripts/extraction/project_sources.py \
+  scripts/extraction/verify_projection.py \
   tests/extraction/test_projection_apply.py \
-  tests/extraction/test_project_sources_cli.py
-git commit -m "feat(extraction): stage and verify projected source"
+  tests/extraction/test_project_sources_cli.py \
+  tests/extraction/test_verify_projection.py
+git commit -m "feat(extraction): stage and verify exact source projection"
 ```
 
 ---
 
-### Task 6: Add the Hand-Written Package and Test Harness
+### Task 6: Add Deterministic Upstream Drift Reporting
 
 **Files:**
-- Create: `extracted/hermes-connect-kit/README.md`
-- Create: `extracted/hermes-connect-kit/pyproject.toml`
-- Create: `extracted/hermes-connect-kit/src/hermes_connect/__init__.py`
-- Create: `extracted/hermes-connect-kit/tests/conftest.py`
-- Create: `extracted/hermes-connect-kit/tests/test_package_boundary.py`
+- Create: `scripts/extraction/report_upstream_drift.py`
+- Create: `tests/extraction/test_upstream_drift.py`
 
 **Interfaces:**
-- Produces an installable placeholder package and a test harness for unchanged projected tests.
-- Does not expose vendor modules as stable API.
+- `build_drift_report(old_lock, new_plan, new_inventory) -> DriftReport`.
+- CLI compares the committed lock with the refreshed plan.
 
-- [ ] **Step 1: Write RED package-boundary tests**
+- [ ] **Step 1: Write failing drift tests**
 
 ```python
-def test_public_package_does_not_reexport_vendor_modules() -> None:
-    import hermes_connect
-
-    assert hermes_connect.__all__ == []
-    assert not hasattr(hermes_connect, "gateway")
-    assert not hasattr(hermes_connect, "providers")
-
-
-def test_generated_roots_are_documented() -> None:
-    readme = Path("extracted/hermes-connect-kit/README.md").read_text(
-        encoding="utf-8"
+def test_drift_report_classifies_source_and_metadata_changes() -> None:
+    old = lock_fixture(
+        record("gateway/a.py", sha="a" * 64, subsystem="channels")
     )
-    for name in ("vendor/", "compatibility/", "reference/", "tests/upstream/"):
-        assert name in readme
+    new = plan_fixture(
+        record("gateway/a.py", sha="b" * 64, subsystem="shared"),
+        record("gateway/b.py", sha="c" * 64, subsystem="channels"),
+    )
+
+    report = build_drift_report(old, new, inventory_fixture())
+
+    assert report.added == ("gateway/b.py",)
+    assert report.changed_hashes == ("gateway/a.py",)
+    assert report.changed_subsystems == ("gateway/a.py",)
 ```
 
-- [ ] **Step 2: Run and verify RED**
+Also cover removed paths, mode/target/classification/planned-layer changes, registry changes, unresolved imports, and selected-test changes.
+
+- [ ] **Step 2: Verify RED**
 
 ```bash
-uv run pytest extracted/hermes-connect-kit/tests/test_package_boundary.py -q
+uv run pytest tests/extraction/test_upstream_drift.py -q
 ```
 
-Expected: package/files missing.
+- [ ] **Step 3: Implement deterministic report models and Markdown**
 
-- [ ] **Step 3: Create minimal package metadata**
+Use frozen dataclasses with sorted tuples. Markdown contains sections for every change category and prints `None` for an empty category; it never omits a category.
 
-`pyproject.toml`:
-
-```toml
-[build-system]
-requires = ["hatchling>=1.27,<2"]
-build-backend = "hatchling.build"
-
-[project]
-name = "hermes-connect-kit"
-version = "0.0.0"
-requires-python = ">=3.11"
-description = "Mechanically synchronized Hermes channel, provider, and onboarding source"
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/hermes_connect"]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-```
-
-`src/hermes_connect/__init__.py`:
-
-```python
-"""Stable public facade placeholder; Phase 3 defines public services."""
-
-__all__: list[str] = []
-```
-
-- [ ] **Step 4: Add the projected-test import harness**
-
-`tests/conftest.py` prepends these absolute directories in order:
-
-1. `compatibility`
-2. `vendor`
-3. repository root only when `HERMES_CONNECT_ALLOW_SOURCE_FALLBACK=1`
-
-The default must not silently import unprojected source from repository root.
-
-- [ ] **Step 5: Document the boundary**
-
-README must state:
-
-- generated vs hand-written paths;
-- no stable vendor API;
-- source/upstream/fork lineage locations;
-- `project_sources --write` and `--check` commands;
-- Phase 3 owns public services and dependency inversion.
-
-- [ ] **Step 6: Verify and commit**
+- [ ] **Step 4: Add CLI**
 
 ```bash
-uv run pytest extracted/hermes-connect-kit/tests/test_package_boundary.py -q
-uv run ruff check extracted/hermes-connect-kit/src extracted/hermes-connect-kit/tests
+uv run python -m scripts.extraction.report_upstream_drift \
+  --lock extracted/hermes-connect-kit/projection-lock.json \
+  --inventory docs/extraction/generated/phase-1-inventory.yaml \
+  --markdown docs/extraction/generated/phase-2-upstream-drift.md
 ```
 
-Expected: all pass.
+When no prior lock exists, report every planned path as added and label the run `initial_projection: true`.
+
+- [ ] **Step 5: Verify and commit**
 
 ```bash
-git add extracted/hermes-connect-kit/README.md \
-  extracted/hermes-connect-kit/pyproject.toml \
-  extracted/hermes-connect-kit/src \
-  extracted/hermes-connect-kit/tests/conftest.py \
-  extracted/hermes-connect-kit/tests/test_package_boundary.py
-git commit -m "feat(extraction): add mechanical projection package shell"
+uv run pytest tests/extraction/test_upstream_drift.py -q
+uv run ruff check scripts/extraction/report_upstream_drift.py \
+  tests/extraction/test_upstream_drift.py
+
+git add scripts/extraction/report_upstream_drift.py \
+  tests/extraction/test_upstream_drift.py
+git commit -m "feat(extraction): report deterministic upstream drift"
 ```
+
+**Checkpoint C:** Review projector safety and drift behavior before generating source.
 
 ---
 
-### Task 7: Project the Shared and Provider Slice
+### Task 7: Generate the Complete Exact Projection
 
 **Files:**
-- Generate: `extracted/hermes-connect-kit/vendor/**`
-- Generate: `extracted/hermes-connect-kit/compatibility/**` for selected shared/provider rules
-- Generate: `extracted/hermes-connect-kit/reference/**` for selected shared/provider rules
-- Generate: `extracted/hermes-connect-kit/tests/upstream/**` for selected shared/provider tests
-- Generate: `extracted/hermes-connect-kit/projection-manifest.json`
-- Create: `docs/extraction/08-phase-2-provider-slice-review.md`
+- Create/update: `extracted/hermes-connect-kit/upstream/**`
+- Create: `extracted/hermes-connect-kit/projection-lock.json`
+- Create: `extracted/hermes-connect-kit/README.md`
+- Create: `docs/extraction/generated/phase-2-upstream-drift.md`
+- Create: `docs/extraction/09-phase-2-projection-review.md`
 
 **Interfaces:**
 - Consumes Tasks 1–6.
-- Produces the first committed projection slice.
+- Produces one complete projected tree, not partial subsystem runtime trees.
 
-- [ ] **Step 1: Verify the plan before writing**
+- [ ] **Step 1: Preview the exact plan**
 
 ```bash
-uv run python -m scripts.extraction.project_sources \
-  --inventory docs/extraction/generated/phase-1-inventory.yaml \
-  --manifest extracted/hermes-connect-kit/extraction-manifest.yaml \
-  --kit-root extracted/hermes-connect-kit \
-  --subsystem shared \
-  --subsystem providers \
-  --dry-run > /tmp/provider-projection.txt
-cat /tmp/provider-projection.txt
+uv run python -m scripts.extraction.project_sources --dry-run \
+  > /tmp/hermes-connect-projection-plan.txt
+cat /tmp/hermes-connect-projection-plan.txt
 ```
 
-Expected: only `shared` and `providers` records, no destination collision, and no source outside the refreshed inventory.
+Expected: one source-relative `upstream/` destination per refreshed source/test record and zero collisions.
 
-- [ ] **Step 2: Write the slice**
+- [ ] **Step 2: Write and immediately verify**
 
 ```bash
-uv run python -m scripts.extraction.project_sources \
-  --inventory docs/extraction/generated/phase-1-inventory.yaml \
-  --manifest extracted/hermes-connect-kit/extraction-manifest.yaml \
-  --kit-root extracted/hermes-connect-kit \
-  --subsystem shared \
-  --subsystem providers \
-  --write
-uv run python -m scripts.extraction.project_sources \
-  --inventory docs/extraction/generated/phase-1-inventory.yaml \
-  --manifest extracted/hermes-connect-kit/extraction-manifest.yaml \
-  --kit-root extracted/hermes-connect-kit \
-  --check
+uv run python -m scripts.extraction.project_sources --write
+uv run python -m scripts.extraction.project_sources --check
 ```
 
 Expected: both commands exit 0.
 
-- [ ] **Step 3: Run provider characterization**
+- [ ] **Step 3: Generate initial drift report**
 
 ```bash
-uv run pytest tests/extraction -q
-scripts/run_tests.sh -j 4 \
-  tests/providers \
-  tests/plugins/model_providers \
-  tests/agent/transports \
-  tests/hermes_cli/test_provider_parity.py \
-  -q
-```
-
-Expected: all pass.
-
-Run projected tests without source fallback where they are import-complete:
-
-```bash
-cd extracted/hermes-connect-kit
-uv run pytest tests/upstream/tests/providers tests/upstream/tests/plugins/model_providers -q
-cd ../..
-```
-
-Document exact skipped tests and missing host imports; do not hide them with broad `--ignore` rules.
-
-- [ ] **Step 4: Write slice self-review**
-
-`08-phase-2-provider-slice-review.md` must include exact counts for:
-
-- source records;
-- selected upstream tests;
-- `vendor`, `compatibility`, and `reference` destinations;
-- provider/profile/catalog/auth identity totals;
-- source-fallback-free projected tests passing;
-- projected tests requiring declared host ports;
-- added/removed destinations compared with the dry run.
-
-- [ ] **Step 5: Diff guard and commit**
-
-```bash
-UNEXPECTED="$(git diff --name-only | grep -Ev '^(docs/extraction/|docs/superpowers/|scripts/extraction/|tests/extraction/|extracted/hermes-connect-kit/)' || true)"
-test -z "$UNEXPECTED" || { printf '%s\n' "$UNEXPECTED"; exit 1; }
-git diff --check
-```
-
-```bash
-git add extracted/hermes-connect-kit docs/extraction/08-phase-2-provider-slice-review.md
-git commit -m "feat(extraction): project shared and provider source"
-```
-
----
-
-### Task 8: Project the Channel Slice
-
-**Files:**
-- Generate/update: `extracted/hermes-connect-kit/vendor/**`
-- Generate/update: `extracted/hermes-connect-kit/compatibility/**`
-- Generate/update: `extracted/hermes-connect-kit/tests/upstream/**`
-- Update: `extracted/hermes-connect-kit/projection-manifest.json`
-- Create: `docs/extraction/09-phase-2-channel-slice-review.md`
-
-**Interfaces:**
-- Adds `channels` records while preserving existing `shared` and `providers` records byte-for-byte.
-
-- [ ] **Step 1: Add a cumulative-preservation regression test**
-
-```python
-def test_channel_slice_preserves_existing_provider_records(tmp_path: Path) -> None:
-    existing = (projection_record("providers/a.py", "providers"),)
-    channels = (projection_record("gateway/a.py", "channels"),)
-
-    combined = merge_projection_records(existing, channels, {"channels"})
-
-    assert {record.subsystem for record in combined} == {"providers", "channels"}
-    assert next(r for r in combined if r.subsystem == "providers") == existing[0]
-```
-
-Run RED by temporarily changing the implementation if necessary; the test must prove preservation, not merely pass vacuously.
-
-- [ ] **Step 2: Write and check the channel slice**
-
-```bash
-uv run python -m scripts.extraction.project_sources \
+uv run python -m scripts.extraction.report_upstream_drift \
+  --lock extracted/hermes-connect-kit/projection-lock.json \
   --inventory docs/extraction/generated/phase-1-inventory.yaml \
-  --manifest extracted/hermes-connect-kit/extraction-manifest.yaml \
-  --kit-root extracted/hermes-connect-kit \
-  --subsystem channels \
-  --write
-uv run python -m scripts.extraction.project_sources \
-  --inventory docs/extraction/generated/phase-1-inventory.yaml \
-  --manifest extracted/hermes-connect-kit/extraction-manifest.yaml \
-  --kit-root extracted/hermes-connect-kit \
-  --check
+  --markdown docs/extraction/generated/phase-2-upstream-drift.md
 ```
 
-Expected: provider/shared records remain unchanged and channel records are added.
+Expected: initial projection lists every path as added and no removed paths.
 
-- [ ] **Step 3: Run channel characterization**
+- [ ] **Step 4: Verify no generated caches or undeclared files**
 
 ```bash
-uv run pytest tests/extraction -q
-scripts/run_tests.sh -j 4 tests/gateway -q
+find extracted/hermes-connect-kit/upstream \
+  \( -name __pycache__ -o -name '*.pyc' -o -name '*.pyo' \) -print
+uv run python -m scripts.extraction.verify_projection
 ```
 
-Run import-complete projected gateway/platform tests without repository fallback and record exact gaps.
+Expected: `find` prints nothing and verifier exits 0.
 
-- [ ] **Step 4: Write channel self-review**
+- [ ] **Step 5: Document the generated boundary**
 
-Include:
+README must state:
 
-- platform manifest count and runtime plugin parity;
-- gateway/platform/relay projected counts;
-- authorization, pairing, session, delivery, streaming, and slash-command test coverage;
-- host imports still required by `gateway/run.py` and status/process management;
-- any new upstream channel file not yet classified.
+- `upstream/` is generated and must not be edited;
+- classification/planned layer are lock metadata;
+- projected imports are not stable consumer API;
+- exact write/check/drift commands;
+- Phase 3 owns `hermes_connect.*` and adaptations.
 
-- [ ] **Step 5: Diff guard and commit**
+- [ ] **Step 6: Write projection self-review**
+
+`09-phase-2-projection-review.md` records exact counts by subsystem, classification, planned layer, file kind, and test/source status. It lists all removed/renamed paths, host boundaries, optional UI paths, and unexpected growth.
+
+- [ ] **Step 7: Diff guard and commit**
 
 ```bash
+UNEXPECTED="$(git diff --name-only | grep -Ev \
+  '^(docs/extraction/|docs/superpowers/|scripts/extraction/|tests/extraction/|extracted/hermes-connect-kit/)' \
+  || true)"
+test -z "$UNEXPECTED" || {
+  printf 'Unexpected projection paths:\n%s\n' "$UNEXPECTED"
+  exit 1
+}
 git diff --check
-uv run ruff check scripts/extraction tests/extraction extracted/hermes-connect-kit/src
+
 git add extracted/hermes-connect-kit \
-  tests/extraction/test_projection_plan.py \
-  docs/extraction/09-phase-2-channel-slice-review.md
-git commit -m "feat(extraction): project channel source"
+  docs/extraction/generated/phase-2-upstream-drift.md \
+  docs/extraction/09-phase-2-projection-review.md
+git commit -m "feat(extraction): project exact Hermes source tree"
 ```
 
 ---
 
-### Task 9: Project Onboarding, Host Ports, Reference Surfaces, and Finalize Phase 2
+### Task 8: Run Projected Tests from the Projected Root
 
 **Files:**
-- Generate/update: all generated projection roots
-- Update: `extracted/hermes-connect-kit/projection-manifest.json`
-- Create: `docs/extraction/10-phase-2-final-review.md`
-- Create: `docs/extraction/PHASE_2_REVIEW_GATE.md`
+- Create: `scripts/extraction/run_projected_tests.py`
+- Create: `tests/extraction/test_run_projected_tests.py`
+- Create: `docs/extraction/10-phase-2-test-evidence.md`
 
 **Interfaces:**
-- Completes all four manifest subsystems.
-- Produces the Phase 2 review gate; does not begin Phase 3.
+- `run_projected_tests(projected_root, test_files, jobs) -> TestRunSummary`.
+- Each test file runs in a fresh subprocess with cwd and `PYTHONPATH` set to the projected root.
 
-- [ ] **Step 1: Project onboarding records**
-
-```bash
-uv run python -m scripts.extraction.project_sources \
-  --inventory docs/extraction/generated/phase-1-inventory.yaml \
-  --manifest extracted/hermes-connect-kit/extraction-manifest.yaml \
-  --kit-root extracted/hermes-connect-kit \
-  --subsystem onboarding \
-  --write
-uv run python -m scripts.extraction.project_sources \
-  --inventory docs/extraction/generated/phase-1-inventory.yaml \
-  --manifest extracted/hermes-connect-kit/extraction-manifest.yaml \
-  --kit-root extracted/hermes-connect-kit \
-  --check
-```
-
-- [ ] **Step 2: Prove complete manifest coverage**
-
-Add a test that compares all inventory source/test records with all committed projection records:
+- [ ] **Step 1: Write failing runner tests**
 
 ```python
-def test_complete_projection_covers_every_manifest_record() -> None:
-    inventory = load_yaml(INVENTORY_PATH)
-    projection = load_json(PROJECTION_MANIFEST_PATH)
+def test_runner_executes_each_file_in_isolated_projected_process(
+    tmp_path: Path,
+) -> None:
+    root = make_projected_fixture(tmp_path)
+    summary = run_projected_tests(
+        root,
+        ("tests/providers/test_a.py", "tests/gateway/test_b.py"),
+        jobs=2,
+    )
 
-    expected = {
-        row["destination"] for row in inventory["files"]
-    } | {
-        row["destination"] for row in inventory["selected_test_files"]
-    }
-    actual = {row["destination"] for row in projection["records"]}
-
-    assert actual == expected
+    assert summary.failed == ()
+    assert summary.passed == (
+        "tests/gateway/test_b.py",
+        "tests/providers/test_a.py",
+    )
 ```
 
-- [ ] **Step 3: Run the full Phase 2 verification chain**
+Add a test proving repository-root shadow modules are not importable unless they also exist under projected root.
+
+- [ ] **Step 2: Verify RED**
 
 ```bash
-uv run python -m scripts.extraction.project_sources \
-  --inventory docs/extraction/generated/phase-1-inventory.yaml \
-  --manifest extracted/hermes-connect-kit/extraction-manifest.yaml \
-  --kit-root extracted/hermes-connect-kit \
-  --check
-uv run ruff check scripts/extraction tests/extraction extracted/hermes-connect-kit/src extracted/hermes-connect-kit/tests
+uv run pytest tests/extraction/test_run_projected_tests.py -q
+```
+
+- [ ] **Step 3: Implement isolated subprocess execution**
+
+Each child command is:
+
+```python
+[
+    sys.executable,
+    "-m",
+    "pytest",
+    test_file,
+    "-q",
+]
+```
+
+Environment:
+
+```python
+env["PYTHONPATH"] = str(projected_root)
+env["OPENROUTER_API_KEY"] = ""
+env["OPENAI_API_KEY"] = ""
+env["NOUS_API_KEY"] = ""
+```
+
+Use bounded `ThreadPoolExecutor` only to manage subprocesses. Sort summaries by test path.
+
+- [ ] **Step 4: Run source characterization and projected regressions**
+
+```bash
 uv run pytest tests/extraction -q
-uv run pytest extracted/hermes-connect-kit/tests -q
 scripts/run_tests.sh -j 4 \
   tests/providers \
   tests/gateway \
@@ -1231,81 +1109,138 @@ scripts/run_tests.sh -j 4 \
   tests/agent/transports \
   tests/hermes_cli/test_provider_parity.py \
   -q
+uv run python -m scripts.extraction.run_projected_tests \
+  --root extracted/hermes-connect-kit/upstream \
+  --inventory docs/extraction/generated/phase-1-inventory.yaml \
+  --jobs 4
 ```
 
-Expected: all commands exit 0. Any projected upstream test requiring source fallback must be listed individually in the final review with its undeclared host import.
+Expected: all selected projected tests pass. Any failure must be fixed by correcting manifest completeness or projected test selection, not by editing files inside `upstream/`.
 
-- [ ] **Step 4: Prove source and branch integrity**
+- [ ] **Step 5: Write exact test evidence**
+
+`10-phase-2-test-evidence.md` contains:
+
+- exact commands;
+- commit SHA;
+- pass/fail counts;
+- failed test names and root cause if any;
+- proof of projected-root `PYTHONPATH`;
+- registry and unresolved-import results;
+- confirmation that no source fallback was enabled.
+
+Do not write “all passed” unless the commands above exited 0 in this checkout.
+
+- [ ] **Step 6: Verify and commit**
+
+```bash
+uv run pytest tests/extraction/test_run_projected_tests.py -q
+uv run ruff check scripts/extraction tests/extraction
+
+git add scripts/extraction/run_projected_tests.py \
+  tests/extraction/test_run_projected_tests.py \
+  docs/extraction/10-phase-2-test-evidence.md
+git commit -m "test(extraction): verify projected Hermes behavior"
+```
+
+**Checkpoint D:** Stop for generated-tree and test-evidence review.
+
+---
+
+### Task 9: Final Phase 2 Integrity Review and Gate
+
+**Files:**
+- Create: `docs/extraction/11-phase-2-final-self-review.md`
+- Create: `docs/extraction/PHASE_2_REVIEW_GATE.md`
+- Modify: `docs/extraction/README.md`
+
+- [ ] **Step 1: Run the fresh completion verification**
+
+```bash
+uv run python -m scripts.extraction.project_sources --check
+uv run python -m scripts.extraction.verify_projection
+uv run ruff check scripts/extraction tests/extraction
+uv run pytest tests/extraction -q
+uv run python -m scripts.extraction.run_projected_tests \
+  --root extracted/hermes-connect-kit/upstream \
+  --inventory docs/extraction/generated/phase-1-inventory.yaml \
+  --jobs 4
+```
+
+Expected: every command exits 0.
+
+- [ ] **Step 2: Prove branch and source integrity**
 
 ```bash
 git merge-base --is-ancestor \
   269eb7b30e0bc3666c377e0325263e7b5bcf49b4 HEAD
+
+test "$(git rev-parse main)" = \
+  "d5a67ad32522273115d887560ca1c08a02bc7873"
+
 UNEXPECTED="$(git diff --name-only \
   269eb7b30e0bc3666c377e0325263e7b5bcf49b4..HEAD \
-  | grep -Ev '^(docs/extraction/|docs/superpowers/|scripts/extraction/|tests/extraction/|extracted/hermes-connect-kit/)' || true)"
-test -z "$UNEXPECTED" || { printf 'Unexpected changes:\n%s\n' "$UNEXPECTED"; exit 1; }
-test "$(git rev-parse main)" = "d5a67ad32522273115d887560ca1c08a02bc7873"
+  | grep -Ev \
+  '^(docs/extraction/|docs/superpowers/|scripts/extraction/|tests/extraction/|extracted/hermes-connect-kit/)' \
+  || true)"
+test -z "$UNEXPECTED" || {
+  printf 'Unexpected Phase 2 paths:\n%s\n' "$UNEXPECTED"
+  exit 1
+}
 ```
 
-Expected: no unexpected paths and local `main` remains at the fork baseline.
+- [ ] **Step 3: Write final self-review**
 
-- [ ] **Step 5: Write the final self-review**
+`11-phase-2-final-self-review.md` must record:
 
-`10-phase-2-final-review.md` must contain:
-
-- exact source/test/projection counts by subsystem and classification;
-- proof that every record has source SHA, upstream SHA, fork-main SHA, Git blob, mode, and SHA-256;
-- all host-port and optional-UI destinations;
-- all source-fallback-required tests and why;
-- no unresolved internal imports;
-- no duplicate destinations;
-- no generated cache/bytecode files;
+- exact source/test/projection counts;
+- exact source/upstream/fork-main SHAs;
+- deterministic lock proof;
 - all corrections made during Phase 2;
-- explicit risks deferred to Phase 3;
-- confirmation that no public services were introduced.
+- every host-port and optional-UI classification;
+- provider/platform identity verification;
+- no unresolved internal imports;
+- no cache/bytecode files;
+- no source fallback;
+- no production-source or workflow changes;
+- risks deferred to Phase 3;
+- confirmation that no public API was introduced.
 
-- [ ] **Step 6: Create the Phase 2 review gate**
+- [ ] **Step 4: Create the human review gate**
 
-`PHASE_2_REVIEW_GATE.md` must require approval of:
+`PHASE_2_REVIEW_GATE.md` requires explicit approval of:
 
-1. projection completeness;
-2. manifest subsystem ownership;
-3. host-port classifications;
-4. projected test gaps;
-5. provider identity preservation;
-6. channel behavior coverage;
+1. source-tree completeness;
+2. manifest-v2 metadata;
+3. lock provenance;
+4. drift/deletion policy;
+5. host-boundary classifications;
+6. provider/platform identities;
 7. onboarding/reference scope;
-8. Phase 3 public-service sequence.
+8. projected regression evidence;
+9. Phase 3 service sequence.
 
-- [ ] **Step 7: Final commit**
+- [ ] **Step 5: Final commit and clean status**
 
 ```bash
-git add scripts/extraction tests/extraction extracted/hermes-connect-kit docs/extraction
-git commit -m "feat(extraction): complete Phase 2 mechanical projection"
+git add docs/extraction
+git commit -m "docs(extraction): add Phase 2 review gate"
 git status --short
 ```
 
 Expected: clean worktree.
 
+**Checkpoint E:** Open a draft PR targeting `planning/channels-providers-phase2-2026-07-22`. Do not merge it and do not begin Phase 3 without explicit human approval.
+
 ---
-
-## Phase 2 Execution Review Checkpoints
-
-Stop for review after each checkpoint:
-
-1. **Checkpoint A:** Task 1 refreshed evidence and upstream impact review.
-2. **Checkpoint B:** Tasks 2–5 manifest/provenance/projection engine.
-3. **Checkpoint C:** Task 7 provider/shared slice.
-4. **Checkpoint D:** Task 8 channel slice.
-5. **Checkpoint E:** Task 9 complete projection and final gate.
-
-Do not combine checkpoints into one giant pull request. Each checkpoint PR targets `planning/channels-providers-phase2-2026-07-22`, never `main`.
 
 ## Plan Self-Review
 
-- **Spec coverage:** Latest evidence refresh, deterministic projection, provenance, selected tests, three subsystem slices, compatibility shims, verification, and final review gate all have explicit tasks.
-- **Placeholder scan:** No `TBD`, `TODO`, “implement later,” or unnamed error-handling steps remain.
-- **Type consistency:** `Subsystem`, `GitTreeEntry`, `FileRecord`, `TestFileRecord`, and `ProjectionRecord` names and fields are consistent across tasks.
-- **Scope control:** Stable services, dependency inversion refactors, UI redesign, and standalone-repository splitting are explicitly deferred to later phases.
-- **Process correction:** The plan avoids temporary CI workflow mutation and requires small checkpoint PRs rather than a single large evidence PR.
-- **Known environment limitation:** The ChatGPT container cannot resolve GitHub, so worktree creation and direct test execution must occur in a connected development checkout or trusted repository CI.
+- **Spec coverage:** Evidence refresh, manifest v2, source guard, Git provenance, selected tests, exact projection, rollback, drift, projected-root tests, and final review gate each have explicit tasks.
+- **Placeholder scan:** No `TBD`, `TODO`, “implement later,” or unnamed error-handling step remains.
+- **Type consistency:** `Subsystem`, `PlannedLayer`, `GitTreeEntry`, `FileRecord`, `TestFileRecord`, `ProjectionRecord`, and `ProjectionPlan` are defined once and used consistently.
+- **Architecture correction:** No generated `vendor/`, `compatibility/`, `reference/`, or separate test import root remains. All synchronized files use one `upstream/` tree.
+- **Source-guard correction:** The plan requires `source_sha` to be an ancestor and scoped Git objects to match; it does not incorrectly require `HEAD == source_sha`.
+- **Transaction wording:** The plan promises a rollback-safe staged swap, not universal cross-platform atomicity.
+- **CI policy:** No workflow file is added or modified. Execution depends on a connected local worktree.
+- **Scope control:** Stable services, dependency inversion, import adapters, and consumer APIs remain Phase 3 work.
