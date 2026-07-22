@@ -1,0 +1,33 @@
+{
+  "default_branch": "main",
+  "branches": [
+    "main",
+    "origin",
+    "planning/agentic-platform-web-foundation-2026-07-22",
+    "planning/channels-providers-phase2-2026-07-22",
+    "planning/source-derived-plan-corrections-2026-07-22",
+    "worktree/channels-providers-phase2-2026-07-22",
+    "worktree/channels-providers-phase2-checkpoint-a-2026-07-22",
+    "worktree/channels-providers-phase2-checkpoint-a-resume-2026-07-22"
+  ],
+  "parent": {
+    "main": null,
+    "origin": "main",
+    "planning/agentic-platform-web-foundation-2026-07-22": "main",
+    "planning/channels-providers-phase2-2026-07-22": "main",
+    "planning/source-derived-plan-corrections-2026-07-22": "main",
+    "worktree/channels-providers-phase2-2026-07-22": "main",
+    "worktree/channels-providers-phase2-checkpoint-a-2026-07-22": "main",
+    "worktree/channels-providers-phase2-checkpoint-a-resume-2026-07-22": "main"
+  },
+  "order": [
+    "main",
+    "origin",
+    "planning/agentic-platform-web-foundation-2026-07-22",
+    "planning/channels-providers-phase2-2026-07-22",
+    "planning/source-derived-plan-corrections-2026-07-22",
+    "worktree/channels-providers-phase2-2026-07-22",
+    "worktree/channels-providers-phase2-checkpoint-a-2026-07-22",
+    "worktree/channels-providers-phase2-checkpoint-a-resume-2026-07-22"
+  ]
+}
