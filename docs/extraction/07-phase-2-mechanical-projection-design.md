@@ -1,228 +1,183 @@
-# Phase 2 Mechanical Source Projection Design
+# Phase 2 Mechanical Source Projection Review
 
-**Status:** Ready for human review — design only  
+**Status:** Consolidated design — ready for human review  
 **Repository:** `Rilan-Dev/hermes-agent`  
-**Isolated planning baseline:** `269eb7b30e0bc3666c377e0325263e7b5bcf49b4`  
+**Combined baseline:** `269eb7b30e0bc3666c377e0325263e7b5bcf49b4`  
 **Included upstream:** `NousResearch/hermes-agent@7de554277de632364c74fcf8641daa58a9a977d9`  
+**Planning branch:** `planning/channels-providers-phase2-2026-07-22`  
 **Work branch:** `worktree/channels-providers-phase2-2026-07-22`  
 **Fork `main`:** unchanged at `d5a67ad32522273115d887560ca1c08a02bc7873`
 
+The canonical detailed specification is:
+
+`docs/superpowers/specs/2026-07-22-hermes-connect-phase2-projection-design.md`
+
+This document presents the same decision in extraction-review order and records the evidence gates that must be satisfied before source movement.
+
 ## 1. Goal
 
-Phase 2 creates a mechanically synchronized source projection for the scoped Hermes channel, onboarding, and AI-provider subsystem. It must preserve source bytes, source-relative paths, plugin discovery, provider identities, and current import behavior before any architectural refactor begins.
+Phase 2 mechanically projects the reviewed Hermes channel, provider, onboarding, host-port, optional-UI, and selected upstream-test files without changing source bytes or behavior.
 
-Phase 2 is successful when the projected tree is reproducible from an exact Hermes commit, byte-verifiable against that commit, importable using the original module names, and covered by the Phase 1 characterization matrix.
+Phase 2 does not introduce the stable `hermes_connect.*` facade. Public services and dependency inversion remain Phase 3 work.
 
-Phase 2 does **not** create the stable public `hermes_connect.*` API. Public services, host ports, and dependency inversion belong to Phase 3 after mechanical parity is proven.
+## 2. Upstream refresh impact
 
-## 2. Upstream refresh findings
+The previous executable inventory was generated from combined baseline `18bb6f1aeaa334badee6271fc3337f39ca6bfcfb`.
 
-The previous executable inventory was generated from combined baseline `18bb6f1aeaa334badee6271fc3337f39ca6bfcfb`. The isolated Phase 2 branch now contains 252 later commits and 303 changed files relative to that baseline.
+The current isolated baseline is 252 commits ahead and includes 303 changed files relative to that evidence. Load-bearing scoped changes include:
 
-The refresh changes several load-bearing scoped files, including:
+- `gateway/run.py`;
+- `gateway/status.py`;
+- `gateway/authz_mixin.py`;
+- `gateway/platforms/base.py`;
+- `gateway/platforms/api_server.py`;
+- direct and plugin platform adapters;
+- `hermes_cli/config.py`;
+- `hermes_cli/gateway.py`;
+- `hermes_cli/main.py`;
+- `hermes_cli/model_switch.py`;
+- `hermes_cli/commands.py`;
+- `agent/agent_init.py`;
+- `agent/turn_context.py`;
+- `run_agent.py`;
+- `hermes_state.py`;
+- `cli.py`;
+- desktop onboarding and platform presentation tests.
 
-- `gateway/run.py`
-- `gateway/status.py`
-- `gateway/authz_mixin.py`
-- `gateway/platforms/base.py`
-- `gateway/platforms/api_server.py`
-- direct and plugin platform adapters
-- `hermes_cli/config.py`
-- `hermes_cli/gateway.py`
-- `hermes_cli/main.py`
-- `hermes_cli/model_switch.py`
-- `hermes_cli/commands.py`
-- `agent/agent_init.py`
-- `agent/turn_context.py`
-- `run_agent.py`
-- `hermes_state.py`
-- `cli.py`
-- desktop onboarding and platform presentation tests
+Possible new or changed transitive boundaries include route identity, subprocess compatibility, context switching, process/service helpers, Windows SSH support, billing/subscription presentation, and bootstrap behavior.
 
-The refresh also adds or changes possible transitive boundary files such as `hermes_cli/route_identity.py`, `_subprocess_compat.py`, context-switch support, billing/subscription presentation, and process/runtime helpers.
+The Phase 1 manifest source SHA, generated inventory, import graph, registry snapshot, and test matrix are therefore stale for source movement. Gate A must regenerate them before projection.
 
-Therefore, the Phase 1 inventory, registry snapshot, manifest source SHA, and regression matrix are stale for source movement. They must be regenerated against `269eb7b30e0bc3666c377e0325263e7b5bcf49b4` before the first projection commit.
+## 3. Final architecture decision
 
-## 3. Corrected projection architecture
+### Selected: one exact source-relative tree
 
-### 3.1 One exact upstream tree
-
-All projected files must preserve their original repository-relative paths beneath a single tree:
+Every selected source and selected upstream test is projected to:
 
 ```text
-extracted/hermes-connect-kit/
-├── README.md
-├── extraction-manifest.yaml
-├── projection-lock.json
-├── upstream/
-│   ├── agent/
-│   ├── gateway/
-│   ├── hermes_cli/
-│   ├── plugins/
-│   ├── providers/
-│   ├── cron/
-│   ├── tools/
-│   └── <other explicitly scoped source paths>
-├── scripts/
-│   ├── project_sources.py
-│   ├── verify_projection.py
-│   └── report_upstream_drift.py
-└── tests/
-    ├── projection/
-    ├── characterization/
-    └── regression/
+extracted/hermes-connect-kit/upstream/<original-repository-path>
 ```
 
-A source file such as `gateway/session.py` is projected to:
+Examples:
 
 ```text
-extracted/hermes-connect-kit/upstream/gateway/session.py
+source: gateway/session.py
+projected: extracted/hermes-connect-kit/upstream/gateway/session.py
+
+source: tests/gateway/test_session.py
+projected: extracted/hermes-connect-kit/upstream/tests/gateway/test_session.py
 ```
 
-No source file is moved into a classification-specific Python import root during Phase 2.
+This preserves normal Python package boundaries and unchanged absolute imports.
 
-### 3.2 Classification is metadata, not an import location
+### Metadata retained for review
 
-The Phase 1 classes remain authoritative:
+Each record retains:
 
-- `core`
-- `host_port`
-- `optional_ui`
-- `test`
-- `exclude_by_default`
+- subsystem owner: `shared`, `providers`, `channels`, or `onboarding`;
+- classification: `core`, `host_port`, `optional_ui`, `test`, or `exclude_by_default`;
+- reason;
+- optional planned Phase 3 layer;
+- source and projected hashes;
+- Git blob, mode, object type, and symlink target.
 
-These values are stored in the manifest, generated inventory, and projection lock. They determine later Phase 3 work, review ownership, and clean-room inclusion. They do not split Python packages in Phase 2.
+Subsystem and classification values are review metadata. They do not create separate Phase 2 import roots.
 
-This correction avoids a defect in the earlier target layout. Separating `agent`, `gateway`, or `hermes_cli` files across `vendor/`, `compatibility/`, and `reference/` roots would split regular Python packages and make unchanged absolute imports dependent on `PYTHONPATH` ordering and namespace-package behavior. A single exact tree avoids that ambiguity.
+### Rejected: split runtime roots
 
-### 3.3 No import rewriting
+The earlier proposal to project files into `vendor/`, `compatibility/`, and `reference/` runtime roots is rejected for Phase 2.
 
-Phase 2 must copy exact bytes. It must not rewrite imports, rename packages, wrap classes, change provider IDs, or change plugin manifests.
+That layout can split regular packages such as `agent`, `gateway`, and `hermes_cli`, making behavior depend on shims, namespace-package rules, or `PYTHONPATH` ordering. It also weakens the promise that the mechanically projected tree behaves like the source.
 
-Selected upstream tests run with:
+Those names may remain planned Phase 3 layers in reports only.
 
-```bash
-PYTHONPATH=extracted/hermes-connect-kit/upstream
-```
+## 4. Manifest version 2
 
-The projected modules therefore keep their current names such as `gateway`, `providers`, `hermes_cli`, and `agent`.
-
-Consumer projects must not depend on these upstream module names as the stable API. Phase 3 will introduce `hermes_connect.*` services that delegate into this tree.
-
-## 4. Manifest and lock model
-
-### 4.1 Manifest version 2
-
-The Phase 2 manifest should separate source identity from future architectural placement.
-
-Required top-level fields:
+Required lineage:
 
 ```yaml
 version: 2
 source_repository: Rilan-Dev/hermes-agent
 source_sha: 269eb7b30e0bc3666c377e0325263e7b5bcf49b4
+upstream_repository: NousResearch/hermes-agent
+upstream_sha: 7de554277de632364c74fcf8641daa58a9a977d9
+fork_main_sha: d5a67ad32522273115d887560ca1c08a02bc7873
 projection_root: upstream
 ```
 
-Each dynamic-root or explicit-file rule keeps:
+Every dynamic root, explicit file, and test rule receives one subsystem owner. A source path has one projected path and is never duplicated across subsystems.
 
-```yaml
-path: gateway/platforms
-classification: core
-reason: Base adapter contract plus direct and legacy platform implementations.
-```
-
-The projected path is derived mechanically as:
+The projected path is always derived as:
 
 ```text
 <projection_root>/<source path>
 ```
 
-A rule may keep a `planned_layer` value for Phase 3 documentation, but `planned_layer` must not change the Phase 2 projected path.
+## 5. Correct source guard
 
-### 4.2 Projection lock
+The implementation worktree contains extraction tooling and documentation commits after `source_sha`, so requiring `HEAD == source_sha` would make legitimate implementation impossible.
 
-`projection-lock.json` is deterministic and contains:
+The guard must instead prove:
 
-- schema version;
-- source repository;
-- source commit SHA;
-- manifest SHA-256;
-- generator version;
-- sorted file records;
-- source path;
-- projected path;
+1. `source_sha` is an ancestor of `HEAD`.
+2. The worktree is clean before projection.
+3. Every scoped source/test path exists at `source_sha`.
+4. Every scoped path's current committed Git blob, mode, and symlink target equal the object at `source_sha`.
+5. No scoped production source changed after `source_sha`.
+6. Extraction-only files may change after `source_sha`.
+
+This is the same safety principle as the Phase 1 production-source drift guard, strengthened with Git-object provenance.
+
+## 6. Generated ownership
+
+The projector owns only:
+
+```text
+extracted/hermes-connect-kit/upstream/
+extracted/hermes-connect-kit/projection-lock.json
+```
+
+It must never delete or overwrite handwritten package metadata, docs, scripts, tests, or future `src/hermes_connect/` code.
+
+A stale path may be removed only when the previous lock records it as generated and the reviewed drift report lists it as removed or renamed.
+
+## 7. Projection transaction
+
+Projection uses a rollback-safe staged swap:
+
+1. Build the complete sorted plan.
+2. Write files and safe relative symlinks into a sibling staging directory.
+3. Verify bytes, hashes, Git modes, targets, and expected paths.
+4. Generate the deterministic staged lock.
+5. Rename the old generated tree to a backup.
+6. Rename staging to `upstream/`.
+7. Restore the backup if the second rename fails.
+8. Remove the backup only after final verification.
+
+This is not described as universally atomic because directory replacement differs across operating systems and filesystems.
+
+## 8. Projection lock
+
+`projection-lock.json` contains sorted deterministic records and no timestamps, usernames, hostnames, or local absolute paths.
+
+Each record contains:
+
+- source repository and source SHA;
+- upstream and fork-main lineage;
+- source and projected paths;
+- subsystem;
 - classification;
-- reason;
-- source SHA-256;
-- projected SHA-256;
+- planned layer when present;
+- Git object type, mode, and blob SHA;
+- SHA-256;
 - byte size;
-- executable-bit state where relevant.
+- safe relative symlink target when applicable.
 
-The lock must not contain wall-clock timestamps, local absolute paths, hostnames, usernames, or environment-dependent ordering.
+Normal projected files must be byte-identical to their source blobs. Absolute or escaping symlinks are rejected.
 
-### 4.3 Source identity rules
+## 9. Identity invariants
 
-The projector must reject:
-
-- a source checkout whose `HEAD` is not the manifest `source_sha`;
-- a dirty source checkout unless an explicit read-only override is used only for diagnostics;
-- path traversal;
-- symlinks that resolve outside the source repository;
-- destination collisions;
-- generated Python cache and bytecode files;
-- duplicate source rules with conflicting metadata;
-- source files absent from the generated Phase 1 inventory;
-- projected files whose bytes differ from the source bytes.
-
-## 5. Projection algorithm
-
-The projection command is intentionally destructive only inside the generated `upstream/` tree.
-
-1. Load and validate the version-2 manifest.
-2. Verify the source repository and exact source SHA.
-3. Regenerate the scoped filesystem inventory.
-4. Compare runtime registries with the reviewed registry snapshot.
-5. Build the complete sorted source-to-projected-path plan.
-6. Write all projected files into a temporary sibling directory.
-7. Preserve source bytes and executable-bit state.
-8. Generate `projection-lock.json` from the temporary output.
-9. Re-hash every temporary projected file and compare it with its source record.
-10. Atomically replace the prior generated `upstream/` tree.
-11. Leave every handwritten file outside `upstream/` unchanged.
-12. Run projection, characterization, and selected upstream regression tests.
-
-Stale generated files may be removed only when all of the following are true:
-
-- the path is inside `extracted/hermes-connect-kit/upstream/`;
-- the previous projection lock records the path as generated;
-- the refreshed manifest/inventory no longer includes it;
-- the drift report explicitly lists it as removed or renamed.
-
-The projector must never delete repository files outside the generated projection root.
-
-## 6. Drift handling
-
-`report_upstream_drift.py` compares two reviewed source SHAs and reports:
-
-- newly scoped files;
-- removed scoped files;
-- renamed scoped files when Git evidence is available;
-- changed file hashes;
-- classification changes;
-- newly unresolved internal imports;
-- registry membership changes;
-- provider identity changes;
-- platform identity changes;
-- tests added, removed, or changed in the selected matrix.
-
-A drift report is review evidence. It must not silently update classifications or provider aliases.
-
-Locally patched projected files are prohibited in Phase 2. Any required adaptation must be recorded as a Phase 3 compatibility change outside `upstream/`. `verify_projection.py` fails when a projected file differs from its source hash.
-
-## 7. Provider identity invariants
-
-The following identity layers remain distinct:
+The following remain distinct:
 
 - platform manifest name;
 - runtime plugin key;
@@ -234,180 +189,152 @@ The following identity layers remain distinct:
 - model-catalog/provider-picker ID;
 - transport/protocol family.
 
-The projector copies these identities unchanged. It must not normalize aliases or collapse OpenAI-compatible providers.
+OpenAI API-key authentication, OpenAI Codex OAuth/runtime, native OpenAI model identifiers, and generic OpenAI-compatible endpoints must not be collapsed.
 
-In particular, the following remain separate concepts:
+Intentional regional, OAuth, and multi-profile aliases remain explicit.
 
-- OpenAI API authentication;
-- OpenAI Codex OAuth/runtime;
-- native OpenAI runtime/model-catalog identifiers;
-- generic OpenAI-compatible endpoints;
-- intentional multi-profile aliases such as regional or OAuth variants.
+## 10. Channel and onboarding invariants
 
-## 8. Channel invariants
+Projection must preserve current behavior for platform discovery, enablement, authorization, pairing, gateway locking, sessions, threads, chunking, media, explicit/home/cron delivery, hooks, mirroring, relay, streaming, reconnect, and startup failure.
 
-The projected tree must preserve current behavior for:
+`gateway/run.py` remains mechanically projected even though it is a Phase 3 host-port boundary.
 
-- platform discovery and enablement;
-- direct, legacy, and plugin-packaged adapters;
-- source authorization and allowlists;
-- pairing;
-- profile/token-scoped gateway locking;
-- session keys;
-- thread and reply routing;
-- message chunking and media delivery;
-- home-channel and explicit-target delivery;
-- standalone and cron delivery;
-- hooks, mirroring, relay behavior, and stream events;
-- reconnect and startup-failure behavior.
+Contextual, CLI, desktop, and web onboarding remain separate presentation surfaces over shared backend provider/platform truth. No new static membership list is allowed.
 
-`gateway/run.py` remains mechanically projected in Phase 2 even though it is a host-port boundary. Phase 3 must replace its concrete agent construction and process-global dependencies behind explicit protocols.
+## 11. Test execution
 
-## 9. Onboarding invariants
+Phase 2 adds no import rewriting or runtime shims.
 
-Contextual, CLI, desktop, and web onboarding remain separate presentation surfaces over shared backend truth.
+Projected tests execute from the projected root so the original repository cannot shadow projected modules:
 
-Phase 2 preserves existing source and tests. It must not introduce a second static provider or platform membership list.
+```bash
+cd extracted/hermes-connect-kit/upstream
+PYTHONPATH="$PWD" python -m pytest tests/<selected-path> ...
+```
 
-The backend provider catalog, provider profiles, auth registry, and platform registry remain the membership sources. Desktop/web files may retain ordering, icons, labels, and featured presentation only.
+Use the repository's canonical isolated per-file runner or equivalent subprocess isolation when shared global state makes one combined pytest process unreliable.
 
-## 10. Required tests before projection review
+Required coverage includes:
 
-### 10.1 Manifest and projector tests
-
-- version-2 schema validation;
-- exact source-SHA requirement;
+- manifest-v2 validation;
+- source ancestry and scoped blob parity;
 - dynamic-root recursion;
-- deterministic ordering;
+- deterministic ordering and lock output;
 - cache/bytecode exclusion;
-- path traversal rejection;
-- external symlink rejection;
-- destination collision rejection;
-- duplicate-rule conflict rejection;
-- exact byte-copy verification;
-- executable-bit preservation;
-- deterministic lock generation;
-- atomic replacement;
+- path traversal and unsafe symlink rejection;
+- collision and duplicate-rule rejection;
+- byte/mode/target preservation;
+- staged-swap rollback;
 - handwritten-file preservation;
-- stale generated-file removal limited to the projection root.
+- stale generated-file deletion limited to `upstream/`;
+- registry identity characterization;
+- zero unresolved in-scope internal imports;
+- selected changed gateway, provider, config, runtime, state, channel, and onboarding regressions.
 
-### 10.2 Characterization tests
+## 12. Review reports
 
-- platform manifest names equal the expected runtime plugin-key set;
-- provider plugin directories are represented in provider profiles;
-- intentional additional provider profiles are characterized explicitly;
-- canonical, auth, runtime, and picker provider sets remain compatible without being incorrectly equated;
-- unresolved in-scope internal imports remain zero;
-- every projected source is declared;
-- every declared source is projected;
-- every projected hash equals its source hash.
+The complete projection tree is generated together. Review slicing is performed through metadata reports, not partial runtime trees.
 
-### 10.3 Selected upstream regressions
+Required reports:
 
-The refreshed matrix must include changed scoped tests for:
+1. shared infrastructure;
+2. provider runtime and provider plugins;
+3. channels, gateway, and platform plugins;
+4. onboarding and optional reference surfaces;
+5. added/removed/changed scoped paths;
+6. identity and registry changes;
+7. selected-test changes;
+8. unresolved dependency changes.
 
-- gateway startup, reconnect, authorization, status, session, model commands, and API server behavior;
-- platform base behavior and changed platform adapters;
-- provider/model switching and runtime resolution;
-- config persistence and migration;
-- agent initialization, transport use, and credential rotation;
-- session-state persistence;
-- CLI and onboarding behavior relevant to provider/channel setup;
-- desktop onboarding parity and platform presentation where retained as reference UI.
+## 13. Windows and process boundary
 
-Tests should run through the repository's canonical isolated per-file runner when shared process state makes a combined pytest invocation unreliable.
-
-## 11. Windows and process-runtime boundary
-
-Before projecting optional CLI integration, the refreshed inventory must explicitly classify:
+Gate A must explicitly classify:
 
 - `hermes_cli/windows_ssh_runtime.py`;
 - `hermes_cli/_subprocess_compat.py`;
-- `hermes_bootstrap` dependencies;
+- bootstrap dependencies;
 - process title and hard-exit helpers;
 - service/process management imports;
-- newly introduced route/context identity helpers.
+- route/context identity helpers.
 
-These files may be mechanically projected when required for unchanged imports or selected tests. Their behavior remains a Phase 3 host-port concern and must not leak into the stable public service API.
+Required files may be projected unchanged. Their behavior must not become part of the stable public API until Phase 3.
 
-## 12. Git and CI policy
+## 14. Git and CI policy
 
-- Fork `main` is not modified by Phase 2 planning or projection review.
-- Work occurs only on the isolated Phase 2 branch/worktree lineage.
-- No unrelated file cleanup is allowed.
+- Fork `main` remains unchanged.
+- Work remains on isolated Phase 2 branches/worktrees.
+- No unrelated cleanup is allowed.
 - No GitHub Actions workflow is added, enabled, or expanded while Actions spending is disabled.
-- Verification commands must be runnable locally.
-- When local execution is unavailable in the current automation runtime, the branch must remain at the design/evidence gate rather than claiming unrun tests passed.
-- A projection PR targets the Phase 2 planning branch, not `main`.
-- The projection PR remains unmerged until its generated tree, lock, drift report, and test evidence are reviewed.
+- Verification is local and recorded in committed notes.
+- When a runtime cannot create a real local worktree or run tests, work stops at the review gate rather than claiming success.
+- The implementation PR targets the Phase 2 planning branch and remains draft/unmerged until explicit review.
 
-## 13. Implementation sequence
+## 15. Execution gates
 
 ### Gate A — Refresh evidence
 
-1. Regenerate the manifest source SHA, filesystem inventory, import graph, registry snapshot, and test matrix at `269eb7b30e0bc3666c377e0325263e7b5bcf49b4`.
-2. Review all added/changed/removed scoped paths.
-3. Explicitly classify Windows/process helpers and new transitive dependencies.
-4. Confirm unresolved in-scope internal imports are zero.
+- regenerate manifest lineage, inventory, import graph, registry snapshot, and selected tests;
+- classify new transitive dependencies;
+- verify zero unresolved in-scope internal imports;
+- record exact added, removed, and changed scoped paths.
 
-### Gate B — Manifest v2
+### Gate B — Manifest and provenance
 
-1. Write failing schema and mapping tests.
-2. Introduce `projection_root` and source-relative projected paths.
-3. Preserve classification and planned-layer metadata.
-4. Regenerate deterministic inventory reports.
+- implement manifest version 2;
+- add subsystem and planned-layer metadata;
+- derive projected paths from original source paths;
+- capture Git blob, mode, object type, and safe symlink targets.
 
-### Gate C — Projector
+### Gate C — Projection engine
 
-1. Write failing exact-copy, safety, determinism, and atomicity tests.
-2. Implement the minimal projector.
-3. Generate the first `upstream/` tree and lock.
-4. Verify byte parity for every file.
+- implement deterministic planning;
+- implement staging, verification, rollback-safe swap, `--write`, and `--check`;
+- ensure generated ownership is limited to `upstream/` and the lock.
 
-### Gate D — Regression parity
+### Gate D — Generate and verify
 
-1. Run extraction tests.
-2. Run changed scoped upstream tests through the canonical runner.
-3. Run registry parity and unresolved-import checks.
-4. Produce a review report containing exact commands and results.
+- generate the complete projected source/test tree;
+- verify every record against source;
+- run characterization and selected upstream regressions from the projected root;
+- produce subsystem and drift reports.
 
 ### Gate E — Human review
 
-Review the generated source tree, projection lock, drift report, classifications, provider identities, channel invariants, onboarding surfaces, and test evidence.
+Review the projection tree, lock, drift reports, classifications, identities, dependency changes, test results, and self-critique.
 
-Only after Gate E approval may Phase 3 introduce `hermes_connect.*` public services and host ports.
+Only Gate E approval authorizes Phase 3.
 
-## 14. Acceptance criteria
+## 16. Acceptance criteria
 
 Phase 2 is complete only when:
 
-1. The refreshed evidence is based on `269eb7b30e0bc3666c377e0325263e7b5bcf49b4`.
-2. Every projected file exists at `upstream/<original source path>`.
-3. Every projected file is byte-identical to its source.
-4. The projection lock is deterministic.
-5. New children under dynamic platform/provider roots are detected automatically.
-6. Removed or renamed scoped files are reported before deletion from the generated tree.
-7. No file outside the generated projection root is removed by the projector.
-8. Provider and platform identity layers remain distinct and characterized.
-9. Unresolved in-scope internal imports are zero.
-10. Selected unchanged upstream tests pass against the projected tree.
-11. No public facade or behavior refactor is mixed into the mechanical projection.
-12. Fork `main` remains unchanged.
-13. The Phase 2 review PR remains unmerged until explicit human approval.
+1. refreshed evidence uses combined baseline `269eb7b30e0bc3666c377e0325263e7b5bcf49b4`;
+2. every projected path is `upstream/<original source path>`;
+3. every normal file is byte-identical to its source blob;
+4. modes and safe symlinks are preserved;
+5. the lock is deterministic;
+6. dynamic plugin children are detected automatically;
+7. removed/renamed scoped paths are reported before generated deletion;
+8. no handwritten or production file is removed;
+9. identity layers remain distinct;
+10. unresolved in-scope internal imports are zero;
+11. selected upstream tests pass from the projected root;
+12. no behavior refactor or public facade is mixed into projection;
+13. no GitHub Actions spending is introduced;
+14. fork `main` remains unchanged;
+15. the review PR remains unmerged until explicit approval.
 
-## 15. Self-review
+## 17. Self-review corrections
 
-The design was checked for the following failure modes:
+The consolidated design corrects:
 
-- split regular Python packages across classification roots;
-- hidden import rewriting;
-- copied files drifting from source bytes;
-- stale generated files being deleted without provenance;
-- provider aliases being incorrectly collapsed;
-- desktop/web presentation becoming a provider registry;
-- host-specific process/runtime behavior entering the stable API too early;
-- generated output touching files outside the projection root;
-- claims of successful testing without an executable local environment;
-- accidental changes to fork `main` or GitHub Actions spending.
+- split Python packages across classification roots;
+- hidden import shims and path-order behavior;
+- an impossible exact-HEAD requirement on the implementation branch;
+- overstated cross-platform atomic replacement;
+- partial subsystem trees being treated as independently runnable;
+- dependence on paid GitHub Actions;
+- provider/platform identity collapse;
+- source adaptations being mixed into mechanical projection.
 
-The main correction from the earlier design is deliberate: Phase 2 uses one exact source-relative projection tree. Architectural separation follows in Phase 3, after mechanical parity is proven.
+The next step after approval is to execute the detailed plan in `docs/superpowers/plans/2026-07-22-hermes-connect-phase2-mechanical-projection.md` inside a real local worktree.
