@@ -12,4 +12,4 @@ export default [
       'react-hooks/exhaustive-deps': 'off'
     }
   }
-]
+];
